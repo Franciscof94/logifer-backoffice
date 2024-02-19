@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800&display=swap");
+
+html {
+  font-family: "Montserrat", sans-serif;
+}
+
+input[type="text"] {
+  appearance: none;
+  border: none;
+  margin: 0;
+  outline: none;
+  font-family: inherit;
+}
+
+::placeholder {
+  padding: 6px;
+}
+
+.scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #f3f4f6;
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 8px;
+  border-radius: 4px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+  border-radius: 4px;
+}
+
+
+/* NAVBAR TRANSITION */
+
+.navbar-transition {
+  transition: transform 0.3s ease, width 0.3s ease, border-radius 0.3s ease;
+}
+
+.navbar-expanded {
+  transform: translateX(0);
+  width: 240px; 
+  border-radius: 18px; 
+}
+
+.navbar-collapsed {
+  transform: translateX(-10px); 
+  width: 72px;
+}
+
+
+
+@tailwind utilities;

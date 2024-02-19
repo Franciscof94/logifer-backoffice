@@ -1,0 +1,28 @@
+.page-item.active .page-link {
+    background-color: #B8B8B8;
+    color: white;
+}
+
+.pagination {
+    display: flex;
+    height: 38px;
+    align-items: center;
+    background-color: white;
+    border-radius: 6px;
+}
+
+
+.page-item .page-link {
+    border-radius: 6px;
+    height: 45px;
+    line-height: 30px;
+   
+    color: grey;
+    font-size: 18px;
+    padding: 7px 12px;
+}
+
+
+.visually-hidden {
+    display: none;
+}
