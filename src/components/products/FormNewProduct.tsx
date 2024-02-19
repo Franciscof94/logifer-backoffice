@@ -20,7 +20,7 @@ export const FormNewProduct: FC<Props> = ({ methods }) => {
 
   const onSubmit: SubmitHandler<IProduct> = async (data) => {
     try {
-      const res = await ProductsService.postNewProduct(data);
+      await ProductsService.postNewProduct(data);
       toast.success("Producto creado exitosamente");
       setTimeout(() => {
         navigate("/productos");

@@ -22,8 +22,15 @@ export const Clients = () => {
   const fetchClients = useCallback(
     async (page = 1, rows = 9) => {
       try {
-        const filteredFilters = Object.fromEntries(
-          Object.entries(filters).filter(([key, value]) => value !== "")
+        const filteredFilters = Object.keys(filters).reduce(
+          (acc: { [key: string]: string }, key) => {
+            const value = filters[key];
+            if (value !== "") {
+              acc[key] = value;
+            }
+            return acc;
+          },
+          {}
         );
         dispatch(setLoadingOrdersTable(true));
 

@@ -15,7 +15,7 @@ const defaultState: SelectOptionsState = {
 
 export const fetchClientsOptions = createAsyncThunk(
   "select/clients",
-  async (state: any) => {
+  async () => {
     const { data } = await SelectOptionsService.getClients();
     return data;
   }
@@ -23,7 +23,7 @@ export const fetchClientsOptions = createAsyncThunk(
 
 export const fetchProductsOptions = createAsyncThunk(
   "select/products",
-  async (state: any) => {
+  async () => {
     const { data } = await SelectOptionsService.getProducts();
     return data;
   }
@@ -31,7 +31,7 @@ export const fetchProductsOptions = createAsyncThunk(
 
 export const fetchUnitTypeOptions = createAsyncThunk(
   "select/unittype",
-  async (state: any) => {
+  async () => {
     const { data } = await SelectOptionsService.getUnitType();
     return data;
   }

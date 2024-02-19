@@ -9,16 +9,12 @@ import { IPagination } from "../../interfaces/Pagination.interface";
 import ClipLoader from "react-spinners/ClipLoader";
 import { useSelector } from "react-redux";
 import ProductsService from "../../services/products/productsService";
+import { toast } from "react-toastify";
 
 interface Props {
   products: IProduct[] | undefined;
   pagination: IPagination | undefined;
   refreshTable: (page?: number | undefined, rows?: number | undefined) => void;
-}
-
-interface Unit {
-  mt: string;
-  u: string;
 }
 
 const override: CSSProperties = {
@@ -72,7 +68,7 @@ export const TableProducts: FC<Props> = ({
     setIsOpenModalEditStock(false);
   };
 
-  const handleDelete = async (id: number | undefined) => {
+  const handleDelete = async () => {
     try {
       await ProductsService.deleteProduct(productSelected?.id);
 

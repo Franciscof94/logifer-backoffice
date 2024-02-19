@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import Cookies from "js-cookie";
-import { JwtPayload, jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 import { Logo } from "../assets";
 import { RxHamburgerMenu } from "react-icons/rx";

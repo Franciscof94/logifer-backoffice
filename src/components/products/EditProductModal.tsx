@@ -38,7 +38,6 @@ export const EditProductModal: FC<Props> = ({
   modalIsOpen,
   closeModal,
   product,
-  handleEdit,
   refreshTable,
 }) => {
   const methods = useForm<IProduct>({
