@@ -12,20 +12,27 @@ import { login } from "../store/slices/authSlice";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ModalLoginError } from "../components/auth/ModalLoginError";
+import { setLoadingButton } from "../store/slices/uiSlice";
 
 export const Login = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const[error, setError] = useState('')
+  const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const methods = useForm<IUser>({
     resolver: yupResolver(UserSchema),
     mode: "onChange",
+    defaultValues: {
+      email: "admin@gmail.com",
+      password: "@Admin1",
+    },
   });
 
   const { handleSubmit } = methods;
 
   const auth = useSelector((state: any) => state.authData.auth);
+  
+  const { isLoadingButton } = useSelector((state: any) => state.uiData);
 
   const closeModal = () => {
     setModalIsOpen(false);
@@ -35,7 +42,7 @@ export const Login = () => {
     setModalIsOpen(true);
   };
 
-  console.log(auth)
+  console.log(auth);
 
   useEffect(() => {
     if (auth?.accessToken) {
@@ -45,15 +52,17 @@ export const Login = () => {
 
   const onSubmit: SubmitHandler<IUser> = async (data) => {
     try {
+      dispatch(setLoadingButton(true));
       const res = await AuthService.postLogin(data);
-
+      dispatch(setLoadingButton(false));
       const { accessToken, refreshToken, user } = res;
       Cookies.set("token", JSON.stringify({ accessToken, refreshToken }));
 
       dispatch(login({ accessToken, user, refreshToken }));
     } catch (error: Error | AxiosError | any) {
+      dispatch(setLoadingButton(false));
       openModal();
-      setError(error.message)
+      setError(error.message);
     }
   };
 
@@ -83,6 +92,8 @@ export const Login = () => {
                 legend="Ingresar"
                 width="365px"
                 size="xl"
+                isLoading={isLoadingButton}
+                disabled={isLoadingButton}
                 color="blue"
                 height="45px"
                 weight="font-light"
@@ -91,7 +102,11 @@ export const Login = () => {
           </div>
         </div>
       </form>
-      <ModalLoginError closeModal={closeModal} modalIsOpen={modalIsOpen} message={error} />
+      <ModalLoginError
+        closeModal={closeModal}
+        modalIsOpen={modalIsOpen}
+        message={error}
+      />
     </FormProvider>
   );
 };
