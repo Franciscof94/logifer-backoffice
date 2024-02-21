@@ -7,6 +7,8 @@ import OrdersService from "../../services/orders/ordersService";
 import { BiSolidEdit } from "react-icons/bi";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import { useDispatch } from "react-redux";
 
 interface Props {
   orders: IOrderModal[] | undefined;
@@ -19,7 +21,12 @@ export const TableOrdersInModal: FC<Props> = ({
   refreshTable,
   closeModalOrderTable,
 }) => {
-  const [updatedCount, setUpdatedCount] = useState<number | null | undefined>(
+  const dispatch = useDispatch();
+
+  const [countToShow, setCountToShow] = useState<number | undefined | null>(
+    null
+  );
+  const [countToSend, setCountToSend] = useState<number | undefined | null>(
     null
   );
   const [modalEditIsOpen, setModalEditIsOpen] = useState(false);
@@ -43,7 +50,9 @@ export const TableOrdersInModal: FC<Props> = ({
 
   const handleDelete = async (id: number | undefined) => {
     try {
+      dispatch(setLoadingButton(true));
       await OrdersService.deleteProductOrder(id);
+      dispatch(setLoadingButton(false));
       setOrdersTable((prevState: IOrderModal[] | undefined) => {
         const filterProductOrder = prevState?.filter(
           (productOrder) => productOrder.id !== id
@@ -56,7 +65,9 @@ export const TableOrdersInModal: FC<Props> = ({
 
         return filterProductOrder;
       });
+      refreshTable();
     } catch (error) {
+      dispatch(setLoadingButton(false));
       console.log(error);
     }
   };
@@ -76,19 +87,23 @@ export const TableOrdersInModal: FC<Props> = ({
           if (ctProduct.id === rowSelected?.id) {
             return {
               ...ctProduct,
-              count: updatedCount || 0,
+              count: countToShow || 0,
             };
           }
           return ctProduct;
         });
       });
+      dispatch(setLoadingButton(true));
       await OrdersService.editProductCount({
         orderId: rowSelected?.id,
-        count: updatedCount,
+        count: countToSend,
       });
+      refreshTable();
+      dispatch(setLoadingButton(false));
       toast.success("Cantidad editada correctamente");
       closeModalEdit();
     } catch (error: Error | AxiosError | any) {
+      dispatch(setLoadingButton(false));
       if (error.response && error.response.status === 400) {
         toast.error(error.response.data.message);
       } else {
@@ -98,21 +113,35 @@ export const TableOrdersInModal: FC<Props> = ({
   };
 
   const handleMinus = () => {
-    const newCount = (updatedCount || 0) - 1;
-    setUpdatedCount(newCount >= 1 ? newCount : 1);
+    const newCountShow = 0.25;
+    let newCount = 0.25;
+
+    if (countToSend) {
+      const roundedCount = Math.round((countToSend ?? 0) * 4) / 4;
+      newCount = roundedCount - 0.25; // Restamos en lugar de sumar
+    }
+
+    console.log(newCount);
+    setCountToShow((prevCount) => {
+      if (prevCount) return prevCount - newCountShow;
+    });
+    setCountToSend(newCount >= 0.25 ? newCount : 0.25); // Aseguramos que no sea menor a 0.25
   };
 
   const handlePlus = () => {
-    let newCount;
-    if (updatedCount === undefined) {
-      newCount = 0.25;
-    } else {
-      if (updatedCount) {
-        const roundedCount = Math.round(updatedCount * 4) / 4;
-        newCount = roundedCount + 0.25;
-      }
+    const newCountShow = 0.25;
+    let newCount = 0.25;
+
+    if (countToSend) {
+      const roundedCount = Math.round((countToSend ?? 0) * 4) / 4;
+      newCount = roundedCount + 0.25;
     }
-    setUpdatedCount(newCount);
+
+    console.log(newCount);
+    setCountToShow((prevCount) => {
+      if (prevCount) return prevCount + newCountShow;
+    });
+    setCountToSend(newCount);
   };
 
   const total = ordersTable?.reduce((acc, row) => {
@@ -121,7 +150,7 @@ export const TableOrdersInModal: FC<Props> = ({
   }, 0);
 
   useEffect(() => {
-    setUpdatedCount(rowSelected?.count);
+    setCountToShow(rowSelected?.count);
   }, [rowSelected?.count, modalEditIsOpen]);
 
   return (
@@ -198,7 +227,7 @@ export const TableOrdersInModal: FC<Props> = ({
       </div>
       <EditProductModal
         closeModal={closeModalEdit}
-        count={updatedCount}
+        count={countToShow}
         modalIsOpen={modalEditIsOpen}
         product={rowSelected?.product}
         handleMinus={handleMinus}

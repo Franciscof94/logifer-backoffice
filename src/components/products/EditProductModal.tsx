@@ -1,4 +1,4 @@
-import  { FC, useEffect } from "react";
+import { FC, useEffect } from "react";
 import Modal from "react-modal";
 import { FaTimes } from "react-icons/fa";
 import { Button } from "../customs/Button";
@@ -9,6 +9,9 @@ import { ProductSchema } from "../../validationSchemas/ProductSchema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import ProductsService from "../../services/products/productsService";
 import { toast } from "react-toastify";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import { AxiosError } from "axios";
+import { useDispatch, useSelector } from "react-redux";
 
 interface Props {
   modalIsOpen: boolean;
@@ -40,10 +43,17 @@ export const EditProductModal: FC<Props> = ({
   product,
   refreshTable,
 }) => {
+  const dispatch = useDispatch();
   const methods = useForm<IProduct>({
     resolver: yupResolver(ProductSchema),
   });
-  const { handleSubmit, setValue } = methods;
+  const {
+    handleSubmit,
+    setValue,
+    formState: { isValid },
+  } = methods;
+
+  const { isLoadingButton } = useSelector((state: any) => state.uiData);
 
   useEffect(() => {
     setValue("price", product?.price ?? 0);
@@ -53,12 +63,15 @@ export const EditProductModal: FC<Props> = ({
 
   const onSubmit: SubmitHandler<IProduct> = async (data) => {
     try {
+      dispatch(setLoadingButton(true));
       await ProductsService.patchProduct(product?.id, data);
+      dispatch(setLoadingButton(false));
       toast.success("Producto editado exitosamente!");
       refreshTable();
       closeModal();
-    } catch (error: any) {
-      toast.error(error);
+    } catch (error: Error | AxiosError | any) {
+      dispatch(setLoadingButton(false));
+      toast.error(error.message);
     }
   };
 
@@ -104,9 +117,11 @@ export const EditProductModal: FC<Props> = ({
                 <Button
                   legend="Guardar"
                   size="xl"
+                  isLoading={isLoadingButton}
+                  disabled={isLoadingButton || !isValid}
+                  color={isValid ? "blue" : "grey-50"}
                   height="36px"
                   width="130px"
-                  color="blue"
                   weight="font-light"
                 />
               </div>

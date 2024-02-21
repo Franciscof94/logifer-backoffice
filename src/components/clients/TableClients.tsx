@@ -9,8 +9,9 @@ import { IPagination } from "../../interfaces/Pagination.interface";
 import ClientsService from "../../services/clients/clientsServices";
 import { ToastContainer, toast } from "react-toastify";
 import ClipLoader from "react-spinners/ClipLoader";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AxiosError } from "axios";
+import { setLoadingButton } from "../../store/slices/uiSlice";
 
 interface Props {
   refreshTable: (page?: number, size?: number) => void;
@@ -29,10 +30,12 @@ export const TableClients: FC<Props> = ({
   clients,
   pagination,
 }) => {
+  const dispatch = useDispatch();
   const [modalDeleteIsOpen, setIsOpenModalDelete] = useState(false);
   const [modalEditIsOpen, setIsOpenModalEdit] = useState(false);
   const [clientSelected, setClientSelected] = useState<IClient>();
   const { loadingTableOrders } = useSelector((state: any) => state.ordersData);
+
   const columns = [
     "Nombre y apellido",
     "Dirección",
@@ -65,12 +68,14 @@ export const TableClients: FC<Props> = ({
 
   const handleDelete = async () => {
     try {
+      dispatch(setLoadingButton(true));
       await ClientsService.deleteClient(clientSelected?.id);
-
+      dispatch(setLoadingButton(false));
       toast.error("Cliente eliminado correctamente");
       refreshTable();
       closeModalDelete();
     } catch (error: Error | AxiosError | any) {
+      dispatch(setLoadingButton(false));
       toast.error(error.message);
     }
   };

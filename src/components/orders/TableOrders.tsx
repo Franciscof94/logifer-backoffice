@@ -50,7 +50,7 @@ export const TableOrders: FC<Props> = ({
   };
 
   const closeModalShow = () => {
-    refreshTable();
+    /* refreshTable(); */
     setIsOpenModalShow(false);
   };
 

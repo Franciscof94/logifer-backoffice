@@ -3,6 +3,7 @@ import Modal from "react-modal";
 import { FaTimes } from "react-icons/fa";
 import { Button } from "../customs/Button";
 import { IClient } from "../../interfaces";
+import { useSelector } from "react-redux";
 
 interface Props {
   modalIsOpen: boolean;
@@ -34,6 +35,7 @@ export const DeleteClientModal: FC<Props> = ({
   client,
   handleDelete,
 }) => {
+  const { isLoadingButton } = useSelector((state: any) => state.uiData);
   return (
     <Modal
       isOpen={modalIsOpen}
@@ -80,7 +82,9 @@ export const DeleteClientModal: FC<Props> = ({
               legend="Eliminar"
               size="xl"
               height="36px"
+              disabled={isLoadingButton}
               width="130px"
+              isLoading={isLoadingButton}
               color="blue"
               weight="font-light"
               onClick={() => {

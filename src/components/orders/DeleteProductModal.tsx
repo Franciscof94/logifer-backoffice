@@ -4,6 +4,7 @@ import { FaTimes } from "react-icons/fa";
 import { Button } from "../customs/Button";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useSelector } from "react-redux";
 
 interface Props {
   modalIsOpen: boolean;
@@ -38,6 +39,7 @@ export const DeleteProductModal: FC<Props> = ({
   product,
   handleDelete,
 }) => {
+  const { isLoadingButton } = useSelector((state: any) => state.uiData);
 
   return (
     <Modal
@@ -80,6 +82,8 @@ export const DeleteProductModal: FC<Props> = ({
             <Button
               legend="Eliminar"
               size="xl"
+              disabled={isLoadingButton}
+              isLoading={isLoadingButton}
               height="36px"
               width="130px"
               color="blue"

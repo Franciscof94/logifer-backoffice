@@ -6,26 +6,34 @@ import { IClient } from "../../interfaces";
 import ClientsService from "../../services/clients/clientsServices";
 import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 interface Props {
   methods: any;
 }
 
 export const FormNewClient: FC<Props> = ({ methods }) => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const {
     handleSubmit,
     formState: { isValid },
   } = methods;
 
+  const { isLoadingButton } = useSelector((state: any) => state.uiData);
+
   const onSubmit: SubmitHandler<IClient> = async (data) => {
     try {
+      dispatch(setLoadingButton(true));
       await ClientsService.postNewClient(data);
       toast.success("Cliente creado exitosamente!");
+      dispatch(setLoadingButton(false));
       setTimeout(() => {
         navigate("/clientes");
       }, 1000);
     } catch (error: any) {
+      dispatch(setLoadingButton(false));
       toast.error(error.response.data.message);
     }
   };
@@ -62,7 +70,8 @@ export const FormNewClient: FC<Props> = ({ methods }) => {
           height="36px"
           legend="Guardar"
           size="xl"
-          disabled={!isValid}
+          isLoading={isLoadingButton}
+          disabled={isLoadingButton || !isValid}
           weight="normal"
           width="140px"
         />

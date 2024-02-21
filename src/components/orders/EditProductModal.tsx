@@ -3,6 +3,7 @@ import Modal from "react-modal";
 import { FaTimes } from "react-icons/fa";
 import { Button } from "../customs/Button";
 import { InputNumber } from "../customs/InputNumber";
+import { useSelector } from "react-redux";
 
 interface Props {
   modalIsOpen: boolean;
@@ -42,7 +43,7 @@ export const EditProductModal: FC<Props> = ({
   handlePlus,
   title,
 }) => {
-
+  const { isLoadingButton } = useSelector((state: any) => state.uiData);
 
   return (
     <Modal
@@ -85,6 +86,8 @@ export const EditProductModal: FC<Props> = ({
           <Button
             legend="Guardar"
             size="xl"
+            isLoading={isLoadingButton}
+            disabled={isLoadingButton}
             height="36px"
             width="130px"
             color="blue"

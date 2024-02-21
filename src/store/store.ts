@@ -4,6 +4,7 @@ import navbarSlice from "./slices/navbarSlice";
 import ordersSlice from "./slices/ordersSlice";
 import selectOptionsSlice from "./slices/selectOptionsSlice";
 import filtersSlice from "./slices/filtersSlice";
+import uiSlice from "./slices/uiSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     ordersData: ordersSlice,
     selectOptionsData: selectOptionsSlice,
     filtersData: filtersSlice,
+    uiData: uiSlice,
   },
 });
 

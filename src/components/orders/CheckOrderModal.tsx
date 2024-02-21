@@ -7,6 +7,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { Data } from "../../interfaces";
 import OrdersService from "../../services/orders/ordersService";
 import { InputText } from "../customs/InputText";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 interface Props {
   modalIsOpen: boolean;
@@ -38,6 +40,8 @@ export const CheckOrderModal: FC<Props> = ({
   refreshTable,
   order,
 }) => {
+  const dispatch = useDispatch();
+  const { isLoadingButton } = useSelector((state: any) => state.uiData);
   const [deliveryDate, setDeliveryDate] = useState("");
 
   return (
@@ -98,20 +102,24 @@ export const CheckOrderModal: FC<Props> = ({
               legend="Aceptar"
               size="xl"
               height="36px"
-              disabled={deliveryDate ? false : true}
+              isLoading={isLoadingButton}
+              disabled={isLoadingButton || !deliveryDate}
               width="130px"
-              color="blue"
+              color={!deliveryDate ? "grey-50" : "blue"}
               weight="font-light"
               onClick={async () => {
                 try {
+                  dispatch(setLoadingButton(true));
                   await OrdersService.markAsSent({
                     orderId: order?.id,
                     deliveryDate: deliveryDate,
                   });
+                  dispatch(setLoadingButton(false));
                   refreshTable();
                   toast.success("Pedido enviado exitosamente");
                   closeModal();
                 } catch (error) {
+                  dispatch(setLoadingButton(false));
                   console.log(error);
                 }
               }}

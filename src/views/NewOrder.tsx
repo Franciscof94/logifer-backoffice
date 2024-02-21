@@ -22,6 +22,7 @@ import {
 } from "../store/slices/selectOptionsSlice";
 import { AppDispatch } from "../store/store";
 import { AxiosError } from "axios";
+import { setLoadingButton } from "../store/slices/uiSlice";
 
 export const NewOrder = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -32,6 +33,8 @@ export const NewOrder = () => {
   const { clientOptions, productsOptions, unitTypeOptions } = useSelector(
     (state: any) => state.selectOptionsData
   );
+
+  const { isLoadingButton } = useSelector((state: any) => state.uiData);
 
   const [newOrders, setNewOrders] = useState<IOrderTable[]>([]);
 
@@ -126,12 +129,15 @@ export const NewOrder = () => {
           productId: ctOrder.product.value,
         };
       });
+      dispatch(setLoadingButton(true));
       await OrdersService.postNewOrder(orders);
       toast.success("Pedido creado correctamente!");
       setTimeout(() => {
         navigate("/pedidos");
       }, 1000);
+      dispatch(setLoadingButton(false));
     } catch (error: Error | AxiosError | any) {
+      dispatch(setLoadingButton(false));
       if (error.response && error.response.status === 400) {
         toast.error(error.response.data.message);
       } else {
@@ -145,6 +151,8 @@ export const NewOrder = () => {
     dispatch(fetchProductsOptions());
     dispatch(fetchUnitTypeOptions());
   }, [dispatch]);
+
+  console.log(isLoadingButton);
 
   useEffect(() => {
     if (findClient) {
@@ -210,10 +218,11 @@ export const NewOrder = () => {
                   dispatch(setAddresAndClientNameDisabled(false));
                 }
               }}
+              isLoading={isLoadingButton}
               size="xl"
               width="139px"
               height="36px"
-              disabled={newOrders.length ? false : true}
+              disabled={newOrders.length && !isLoadingButton ? false : true}
               color={newOrders.length ? "blue" : "grey-50"}
               weight="font-light"
               type="submit"

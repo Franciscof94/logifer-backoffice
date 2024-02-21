@@ -7,9 +7,11 @@ import { EditProductModal as OrdersEditProductModal } from "../orders/EditProduc
 import { IProduct } from "../../interfaces";
 import { IPagination } from "../../interfaces/Pagination.interface";
 import ClipLoader from "react-spinners/ClipLoader";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import ProductsService from "../../services/products/productsService";
 import { toast } from "react-toastify";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import { AxiosError } from "axios";
 
 interface Props {
   products: IProduct[] | undefined;
@@ -30,6 +32,7 @@ export const TableProducts: FC<Props> = ({
   pagination,
   refreshTable,
 }) => {
+  const dispatch = useDispatch();
   const [tableProducts, setTableProducts] = useState<IProduct[]>();
   const [modalDeleteIsOpen, setIsOpenModalDelete] = useState(false);
   const [modalEditIsOpen, setIsOpenModalEdit] = useState(false);
@@ -93,12 +96,15 @@ export const TableProducts: FC<Props> = ({
           return ctProduct;
         });
       });
+      dispatch(setLoadingButton(true));
       await ProductsService.editProductStock(productSelected?.id, updatedCount);
+      dispatch(setLoadingButton(false));
       toast.success("Stock actualizado exitosamente!");
       refreshTable();
       closeModalEditStock();
-    } catch (error) {
-      console.log(error);
+    } catch (error: Error | AxiosError | any) {
+      dispatch(setLoadingButton(false));
+      toast.error(error.message);
     }
   };
 
@@ -108,22 +114,10 @@ export const TableProducts: FC<Props> = ({
   };
 
   const handlePlus = () => {
-    let roundedCount;
-
-    if (updatedCount === undefined) {
-      roundedCount = 1;
+    if (!updatedCount) {
+      setUpdatedCount(1);
     } else {
-      if (updatedCount) {
-        const decimalPart = updatedCount - Math.floor(updatedCount);
-        if (decimalPart > 0.5) {
-          roundedCount = Math.ceil(updatedCount);
-        } else {
-          roundedCount = Math.floor(updatedCount);
-        }
-      }
-    }
-    if (roundedCount) {
-      const newCount = roundedCount + 1;
+      const newCount = updatedCount + 1;
       setUpdatedCount(newCount);
     }
   };

@@ -9,6 +9,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { ClientSchema } from "../../validationSchemas";
 import ClientsService from "../../services/clients/clientsServices";
 import { toast } from "react-toastify";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AxiosError } from "axios";
 
 interface Props {
   modalIsOpen: boolean;
@@ -39,9 +42,12 @@ export const EditClientModal: FC<Props> = ({
   client,
   refreshTable,
 }) => {
+  const dispatch = useDispatch();
   const methods = useForm<IClient>({
     resolver: yupResolver(ClientSchema),
   });
+
+  const { isLoadingButton } = useSelector((state: any) => state.uiData);
 
   const {
     handleSubmit,
@@ -58,12 +64,15 @@ export const EditClientModal: FC<Props> = ({
 
   const onSubmit: SubmitHandler<IClient> = async (data) => {
     try {
-      await ClientsService.patchClient(client?.id,data);
+      dispatch(setLoadingButton(true));
+      await ClientsService.patchClient(client?.id, data);
+      dispatch(setLoadingButton(false));
       toast.success("Cliente editado exitosamente!");
       refreshTable();
-      closeModal()
-    } catch (error: any) {
-      toast.error(error);
+      closeModal();
+    } catch (error: Error | AxiosError | any) {
+      dispatch(setLoadingButton(false));
+      toast.error(error.message);
     }
   };
 
@@ -115,11 +124,12 @@ export const EditClientModal: FC<Props> = ({
                   legend="Guardar"
                   size="xl"
                   height="36px"
+                  isLoading={isLoadingButton}
+                  disabled={isLoadingButton || !isValid}
                   width="130px"
                   type="submit"
                   color={isValid ? "blue" : "grey-50"}
                   weight="font-light"
-                  disabled={!isValid}
                 />
               </div>
             </div>
