@@ -1,9 +1,6 @@
 import { AxiosResponse } from "axios";
 import { axiosInstance } from "../../axios/axios";
-import {
-  IOrderFilter,
-  IOrderResponse,
-} from "../../interfaces";
+import { IOrderFilter, IOrderResponse } from "../../interfaces";
 
 const OrdersService = {
   postNewOrder: async (order: any) => {
@@ -38,19 +35,26 @@ const OrdersService = {
   }) => {
     await axiosInstance.post("/orders/mark-sent", order);
   },
-  deleteProductOrder: async (productOrderId: number | undefined) => {
+  deleteProductOrder: async (
+    orderId: number | undefined,
+    productId: number | undefined
+  ) => {
     await axiosInstance.delete(
-      `/orders/delete-product-order/${productOrderId}`
+      `/orders/delete-product-order/${orderId}/${productId}`
     );
   },
 
   editProductCount: async (order: {
     orderId: number | undefined;
+    productId: number | undefined;
     count: number | undefined | null;
   }) => {
-    await axiosInstance.patch(`/orders/edit-product-count/${order.orderId}`,{
-      count: order.count,
-    });
+    await axiosInstance.patch(
+      `/orders/edit-product-count/${order.orderId}/${order.productId}`,
+      {
+        count: order.count,
+      }
+    );
   },
 };
 

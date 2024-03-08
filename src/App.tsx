@@ -10,6 +10,7 @@ import { NewClient } from "./views/NewClient";
 import { Clients } from "./views/Clients";
 import { NewProduct } from "./views/NewProduct";
 import { Products } from "./views/Products";
+import { Home } from "./views/Home";
 
 function App() {
   return (
@@ -64,6 +65,9 @@ function App() {
                 <Route path={PRIVATE_ROUTE.REPORTS} element={<Reports />} />
               </Route>
 
+              <Route element={<RequireAuth permissions={[VIEW_HOME]} />}>
+                <Route path={PRIVATE_ROUTE.HOME} element={<Home />} />
+              </Route>
             </Route>
           </Route>
 

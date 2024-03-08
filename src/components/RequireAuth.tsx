@@ -15,7 +15,6 @@ export const RequireAuth: FC<Props> = ({ permissions = [] }) => {
     return <Outlet />;
   }
 
-  console.log(auth);
 
   const rol_seleccionado = {
     permisos: ["VIEW_HOME"],

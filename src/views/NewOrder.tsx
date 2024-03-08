@@ -83,8 +83,8 @@ export const NewOrder = () => {
       const newOrder: IOrderTable = {
         id: findProduct?.value,
         product: {
-          label: findProduct?.label ?? "",
-          value: findProduct?.value ?? undefined,
+          name: findProduct?.label ?? "",
+          id: findProduct?.value ?? undefined,
         },
         address: order.address,
         client: {
@@ -126,7 +126,7 @@ export const NewOrder = () => {
         return {
           ...orderWithoutClient,
           clientId: ctOrder.client.value,
-          productId: ctOrder.product.value,
+          productId: ctOrder.product.id,
         };
       });
       dispatch(setLoadingButton(true));
@@ -152,7 +152,6 @@ export const NewOrder = () => {
     dispatch(fetchUnitTypeOptions());
   }, [dispatch]);
 
-  console.log(isLoadingButton);
 
   useEffect(() => {
     if (findClient) {

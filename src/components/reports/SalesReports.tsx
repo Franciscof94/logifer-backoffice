@@ -78,20 +78,20 @@ export const SalesReports = () => {
   const { watch } = methods;
   const yearId = watch("yearReport");
 
-  const fetchReports = useCallback(
-    async () => {
-      try {
-        dispatch(setLoadingOrdersTable(true));
-
-        const reports = await ReportsService.getReportsBySales(yearId);
-        dispatch(setLoadingOrdersTable(false));
-        setReports(reports);
-      } catch (error: any) {
-        console.log(error);
-      }
-    },
-    [yearId, dispatch]
-  );
+  const fetchReports = useCallback(async () => {
+    try {
+      dispatch(setLoadingOrdersTable(true));
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const reports = await ReportsService.getReportsBySales(
+        yearId || currentYear
+      );
+      dispatch(setLoadingOrdersTable(false));
+      setReports(reports);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }, [yearId, dispatch]);
 
   useEffect(() => {
     fetchReports();

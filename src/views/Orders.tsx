@@ -40,11 +40,13 @@ export const Orders = () => {
           rows,
           filters: filteredFilters,
         });
-        dispatch(setLoadingOrdersTable(false));
+
         setOrders(data);
         setPagination(pagination);
       } catch (error: any) {
         console.log(error);
+      } finally {
+        dispatch(setLoadingOrdersTable(false));
       }
     },
     [filters, dispatch]

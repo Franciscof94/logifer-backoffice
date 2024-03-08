@@ -1,4 +1,10 @@
-import React, { CSSProperties, FC, useEffect, useState } from "react";
+import React, {
+  CSSProperties,
+  ChangeEvent,
+  FC,
+  useEffect,
+  useState,
+} from "react";
 import { BiSolidEdit } from "react-icons/bi";
 import { Pagination } from "../pagination/Pagination";
 import { DeleteProductModal } from "./DeleteProductModal";
@@ -108,7 +114,7 @@ export const TableProducts: FC<Props> = ({
     }
   };
 
-  const handleMinus = () => {
+  /*  const handleMinus = () => {
     const newCount = (updatedCount || 0) - 1;
     setUpdatedCount(newCount >= 1 ? newCount : 1);
   };
@@ -120,7 +126,15 @@ export const TableProducts: FC<Props> = ({
       const newCount = updatedCount + 1;
       setUpdatedCount(newCount);
     }
+  }; */
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d*\.?\d*$/.test(value) || value === "") {
+      setUpdatedCount(Number(value));
+    }
   };
+
   useEffect(() => {
     setTableProducts(products);
   }, [products]);
@@ -288,8 +302,7 @@ export const TableProducts: FC<Props> = ({
         modalIsOpen={isOpenModalEditStock}
         product={productSelected?.product}
         handleEdit={handleEdit}
-        handleMinus={handleMinus}
-        handlePlus={handlePlus}
+        handleChange={handleChange}
         count={updatedCount}
         title="stock"
       />

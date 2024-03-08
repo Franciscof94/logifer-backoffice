@@ -120,7 +120,6 @@ export const CheckOrderModal: FC<Props> = ({
                   closeModal();
                 } catch (error) {
                   dispatch(setLoadingButton(false));
-                  console.log(error);
                 }
               }}
             />

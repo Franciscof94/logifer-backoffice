@@ -123,13 +123,19 @@ export const Navbar = () => {
             className="cursor-pointer"
             onClick={() => {
               dispatch(logout());
+              dispatch(setShowNavbar(false));
             }}
           >
             {" "}
             Cerrar sesión
           </p>
         ) : (
-          <div>
+          <div
+            onClick={() => {
+              dispatch(logout());
+              dispatch(setShowNavbar(false));
+            }}
+          >
             <MdLogout color={isOpen ? "white" : "#D0312D"} size={32} />
           </div>
         )}

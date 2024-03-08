@@ -15,10 +15,8 @@ export const Header = () => {
 
   useEffect(() => {
     const cookies = Cookies.get("token");
-    console.log(cookies);
     if (cookies) {
       const { accessToken, refreshToken } = JSON.parse(cookies);
-      console.log(cookies);
       const { user }: any = jwtDecode(accessToken);
       dispatch(login({ accessToken, user, refreshToken }));
     } else {

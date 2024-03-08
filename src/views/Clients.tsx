@@ -49,6 +49,7 @@ export const Clients = () => {
     [filters, dispatch]
   );
 
+
   useEffect(() => {
     fetchClients();
   }, [fetchClients, filters]);

@@ -11,8 +11,7 @@ interface Props {
   product: string | undefined;
   count: number | null | undefined;
   handleEdit: () => void;
-  handleMinus: () => void;
-  handlePlus: () => void;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   title: string;
 }
 
@@ -39,8 +38,7 @@ export const EditProductModal: FC<Props> = ({
   product,
   count,
   handleEdit,
-  handleMinus,
-  handlePlus,
+  handleChange,
   title,
 }) => {
   const { isLoadingButton } = useSelector((state: any) => state.uiData);
@@ -65,11 +63,7 @@ export const EditProductModal: FC<Props> = ({
             <small className=""> {product}</small>
           </p>
           <div>
-            <InputNumber
-              count={count}
-              handleMinus={handleMinus}
-              handlePlus={handlePlus}
-            />
+            <InputNumber count={count} handleChange={handleChange} />
           </div>
         </div>
         <hr className="my-2 border-grey" />

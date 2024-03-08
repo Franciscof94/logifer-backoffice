@@ -42,11 +42,10 @@ export const Login = () => {
     setModalIsOpen(true);
   };
 
-  console.log(auth);
 
   useEffect(() => {
     if (auth?.accessToken) {
-      navigate("/nuevo-pedido", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [navigate, auth]);
 

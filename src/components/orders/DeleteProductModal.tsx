@@ -9,11 +9,15 @@ import { useSelector } from "react-redux";
 interface Props {
   modalIsOpen: boolean;
   closeModal: () => void;
-  product: {
-    id: number | undefined;
-    productName: string | undefined;
-  };
-  handleDelete: (id?: number | undefined) => void;
+  orderId: number | undefined;
+  product:{
+        id: number;
+        name: string | undefined;
+      } | undefined;
+  handleDelete: (
+    orderId?: number | undefined,
+    productId?: number | undefined
+  ) => void;
 }
 
 const customStyles = {
@@ -37,6 +41,7 @@ export const DeleteProductModal: FC<Props> = ({
   modalIsOpen,
   closeModal,
   product,
+  orderId,
   handleDelete,
 }) => {
   const { isLoadingButton } = useSelector((state: any) => state.uiData);
@@ -63,7 +68,7 @@ export const DeleteProductModal: FC<Props> = ({
         <div className="my-4 text-center">
           <p className="font-light text-black">
             ¿Estás seguro de que deseas eliminar este producto
-            <span className="font-medium"> {product?.productName}</span>?
+            <span className="font-medium"> {product?.name}</span>?
           </p>
         </div>
 
@@ -89,7 +94,7 @@ export const DeleteProductModal: FC<Props> = ({
               color="blue"
               weight="font-light"
               onClick={async () => {
-                handleDelete(product?.id);
+                handleDelete(orderId, product?.id);
                 toast.success("Producto eliminado exitosamente");
                 closeModal();
               }}

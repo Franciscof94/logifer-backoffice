@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { CSSProperties, useCallback, useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { IProductsReportFilter } from "../../interfaces/SalesReport.interface";
 import { ProductsReportFilter } from "./ProductsReportFilter";
@@ -15,6 +15,7 @@ import {
 import { useDispatch } from "react-redux";
 import { setLoadingOrdersTable } from "../../store/slices/ordersSlice";
 import ReportsService from "../../services/reports/reportsService";
+import ClipLoader from "react-spinners/ClipLoader";
 
 ChartJS.register(
   CategoryScale,
@@ -24,6 +25,12 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+const override: CSSProperties = {
+  display: "block",
+  margin: "3px auto",
+  borderColor: "#3342B1",
+};
 
 const options = {
   responsive: true,
@@ -41,6 +48,7 @@ export const ProductsReports = () => {
   const dispatch = useDispatch();
   const methods = useForm<IProductsReportFilter>();
   const [reports, setReports] = useState<number[]>();
+  const [loading, setLoading] = useState(false);
 
   const { watch } = methods;
 
@@ -67,31 +75,30 @@ export const ProductsReports = () => {
 
   const filteredLabels = [selectedMonthLabel];
 
-  const fetchReports = useCallback(
-    async () => {
-      try {
-        dispatch(setLoadingOrdersTable(true));
-        if (productValue && yearValue && monthValue) {
-          const reports = await ReportsService.getReportsByProducts(
-            productValue,
-            yearValue,
-            monthValue
-          );
-          dispatch(setLoadingOrdersTable(false));
-          setReports(reports);
-        }
-      } catch (error: any) {
-        console.log(error);
+  const fetchReports = useCallback(async () => {
+    try {
+      dispatch(setLoadingOrdersTable(true));
+      if (productValue && yearValue && monthValue) {
+        setLoading(true);
+        const reports = await ReportsService.getReportsByProducts(
+          productValue,
+          yearValue,
+          monthValue
+        );
+
+        dispatch(setLoadingOrdersTable(false));
+        setReports(reports);
       }
-    },
-    [dispatch, monthValue, productValue, yearValue]
-  );
+    } catch (error: any) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [dispatch, monthValue, productValue, yearValue]);
 
   useEffect(() => {
     fetchReports();
   }, [fetchReports, productValue, yearValue, monthValue]);
-
-
 
   const data = {
     labels: filteredLabels,
@@ -107,16 +114,30 @@ export const ProductsReports = () => {
   return (
     <FormProvider {...methods}>
       <div>
-        {" "}
         <ProductsReportFilter methods={methods} />
-        {productValue && yearValue && monthValue ? (
-          <div className="max-h-[480px] flex justify-center">
-            <Bar options={options} data={data} />
+        {loading ? (
+          <div className="flex justify-center my-12">
+            <ClipLoader
+              color={"#3342B1"}
+              loading={loading}
+              cssOverride={override}
+              size={35}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
           </div>
         ) : (
-          <div className="flex justify-center my-12 font-medium text-2xl text-danger">
-            Seleccione un producto, un año y un mes para ver los reportes
-          </div>
+          <>
+            {productValue && yearValue && monthValue ? (
+              <div className="max-h-[480px] flex justify-center">
+                <Bar options={options} data={data} />
+              </div>
+            ) : (
+              <div className="flex justify-center my-12 font-medium text-2xl text-danger">
+                Seleccione un producto, un año y un mes para ver los reportes
+              </div>
+            )}
+          </>
         )}
       </div>
     </FormProvider>

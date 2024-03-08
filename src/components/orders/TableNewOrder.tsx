@@ -49,7 +49,7 @@ export const TableNewOrder: FC<Props> = ({
   const handleEdit = () => {
     setNewOrders((prevState: IOrderTable[]) => {
       return prevState.map((ctProduct) => {
-        if (ctProduct.id === rowSelected?.product.value) {
+        if (ctProduct.id === rowSelected?.product.id) {
           return {
             ...ctProduct,
             count: updatedCount,
@@ -61,23 +61,13 @@ export const TableNewOrder: FC<Props> = ({
     closeModalEdit();
   };
 
-  const handleMinus = () => {
-    const newCount = (updatedCount || 0) - 0.25;
-    setUpdatedCount(newCount >= 0 ? newCount : 0);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d*\.?\d*$/.test(value) || value === "") {
+      setUpdatedCount(Number(value));
+    }
   };
 
-  const handlePlus = () => {
-    let newCount;
-    if (updatedCount === undefined) {
-      newCount = 0.25;
-    } else {
-      if (updatedCount) {
-        const roundedCount = Math.round(updatedCount * 4) / 4;
-        newCount = roundedCount + 0.25;
-      }
-    }
-    setUpdatedCount(newCount);
-  };
   useEffect(() => {
     setUpdatedCount(rowSelected?.count);
   }, [rowSelected?.count, modalEditIsOpen]);
@@ -114,7 +104,7 @@ export const TableNewOrder: FC<Props> = ({
                 <React.Fragment key={rowIndex}>
                   <tr key={rowIndex} className="">
                     <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                      {row.product.label}
+                      {row.product.name}
                     </td>
 
                     <td key={rowIndex} className="text-grey-70 px-4 py-2">
@@ -170,20 +160,17 @@ export const TableNewOrder: FC<Props> = ({
         <DeleteProductModal
           closeModal={closeModalDelete}
           modalIsOpen={modalDeleteIsOpen}
-          product={{
-            id: rowSelected?.id,
-            productName: rowSelected?.product.label,
-          }}
+          orderId={rowSelected?.id}
+          product={rowSelected?.product}
           handleDelete={handleDelete}
         />
         <EditProductModal
           closeModal={closeModalEdit}
           modalIsOpen={modalEditIsOpen}
-          product={rowSelected?.product.label}
+          product={rowSelected?.product.name}
           count={updatedCount}
           handleEdit={handleEdit}
-          handleMinus={handleMinus}
-          handlePlus={handlePlus}
+          handleChange={handleChange}
           title="producto"
         />
       </div>

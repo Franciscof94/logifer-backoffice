@@ -13,8 +13,8 @@ export interface IOrderWithClientId extends Omit<IOrder, "client"> {
 
 export interface IOrderTable {
   product: {
-    label: string;
-    value: number | undefined;
+    id: number;
+    name: string | undefined;
   };
   client: {
     label: string;
@@ -35,7 +35,10 @@ export interface IOrderFilter {
 
 export interface IOrderModal {
   id: number;
-  product: string;
+  product: {
+    id: number;
+    name: string;
+  };
   count: number;
   price: string;
   unit?: string;
@@ -61,7 +64,10 @@ export interface Data {
 
 export interface Order {
   id: number;
-  product: string;
+  product: {
+    id: number;
+    name: string;
+  };
   count: number;
   price: string;
 }
