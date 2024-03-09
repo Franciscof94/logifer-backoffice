@@ -60,7 +60,7 @@ export const FormNewClient: FC<Props> = ({ methods }) => {
           <InputText placeholder="Dirección" type="text" name="address" />
         </div>
         <div className="flex flex-col flex-1">
-          <label className="text-xl mb-1">Teléfono</label>
+          <label className="text-xl mb-1">Teléfono <span className="text-sm text-[#757575]">(Ingresar número sin 0 y sin 15)</span></label>
           <InputText placeholder="Teléfono" type="text" name="phone" />
         </div>
       </div>
