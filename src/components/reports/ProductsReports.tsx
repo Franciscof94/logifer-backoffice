@@ -104,7 +104,7 @@ export const ProductsReports = () => {
     labels: filteredLabels,
     datasets: [
       {
-        label: "Productos",
+        label: "Cantidad",
         data: reports,
         backgroundColor: "#1c1ce3ad",
       },

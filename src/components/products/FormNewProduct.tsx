@@ -52,7 +52,12 @@ export const FormNewProduct: FC<Props> = ({ methods }) => {
       <div className="flex gap-x-16 mt-8">
         <div className="flex flex-col flex-1">
           <label className="text-xl mb-1">Precio</label>
-          <InputText placeholder="Precio" type="number" name="price" />
+          <InputText
+            placeholder="Precio"
+            type="number"
+            name="price"
+            step="0.01"
+          />
         </div>
         <div className="flex flex-col flex-1">
           <label className="text-xl mb-1">Stock</label>

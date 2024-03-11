@@ -7,13 +7,15 @@ interface Props {
   type: string;
   width?: string;
   color?: string;
-  name: string;
+  name?: string;
   defaultValue?: string | undefined;
-  value?: string | undefined;
+  value?: string | number | undefined;
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  handleChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   disabled?: boolean;
   readOnly?: boolean;
   className?: string;
+  step?: string;
 }
 
 export const InputText: FC<Props> = ({

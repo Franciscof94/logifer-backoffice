@@ -50,11 +50,6 @@ export const TableProducts: FC<Props> = ({
 
   const { loadingTableOrders } = useSelector((state: any) => state.ordersData);
 
-  /*   const openModalDelete = (row: IProduct) => {
-    setIsOpenModalDelete(true);
-    setProductSelected(row);
-  }; */
-
   const closeModalDelete = () => {
     setIsOpenModalDelete(false);
   };
@@ -113,20 +108,6 @@ export const TableProducts: FC<Props> = ({
       toast.error(error.message);
     }
   };
-
-  /*  const handleMinus = () => {
-    const newCount = (updatedCount || 0) - 1;
-    setUpdatedCount(newCount >= 1 ? newCount : 1);
-  };
-
-  const handlePlus = () => {
-    if (!updatedCount) {
-      setUpdatedCount(1);
-    } else {
-      const newCount = updatedCount + 1;
-      setUpdatedCount(newCount);
-    }
-  }; */
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -196,8 +177,8 @@ export const TableProducts: FC<Props> = ({
                           ${row.price}
                         </td>
 
-                        <td key={rowIndex} className="text-grey-70 px-8 py-2 ">
-                          <div className="flex max-w-[290px]">
+                        <td key={rowIndex} className="text-grey-70 px-4 py-2 ">
+                          <div className="flex items-center max-w-[290px]">
                             <div className="flex justify-center min-w-7">
                               {" "}
                               {row.stock}
@@ -210,7 +191,7 @@ export const TableProducts: FC<Props> = ({
                             >
                               <BiSolidEdit className="cursor-pointer" />
                             </div>
-                            <div>
+                            <div >
                               {row.stock === 0 && (
                                 <small className="px-3 text-danger font-medium">
                                   {" "}

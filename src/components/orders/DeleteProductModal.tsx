@@ -10,10 +10,12 @@ interface Props {
   modalIsOpen: boolean;
   closeModal: () => void;
   orderId: number | undefined;
-  product:{
+  product:
+    | {
         id: number;
         name: string | undefined;
-      } | undefined;
+      }
+    | undefined;
   handleDelete: (
     orderId?: number | undefined,
     productId?: number | undefined
@@ -45,6 +47,8 @@ export const DeleteProductModal: FC<Props> = ({
   handleDelete,
 }) => {
   const { isLoadingButton } = useSelector((state: any) => state.uiData);
+
+  console.log(product);
 
   return (
     <Modal

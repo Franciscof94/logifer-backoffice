@@ -38,13 +38,15 @@ export const FormNewOrder: FC<Props> = ({
   const { addressAndClientNameDisabled } = useSelector(
     (state: any) => state.ordersData
   );
-  const onSubmit: SubmitHandler<IOrder> = (data) => handleSetOrder(data);
+  const onSubmit: SubmitHandler<IOrder> = (data) => {
+    console.log(data);
+    handleSetOrder(data);
+  };
 
   const clientsWithoutAddress = clients.map((client) => {
     const { address, ...clientWithoutAddress } = client;
     return clientWithoutAddress;
   });
-
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -89,6 +91,7 @@ export const FormNewOrder: FC<Props> = ({
                 name="count"
                 placeholder="Cantidad"
                 type="number"
+                step="0.01"
                 disabled={isSelectCountDisabled}
               />
             </div>

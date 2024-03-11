@@ -35,7 +35,6 @@ export const ShowOrderModal: FC<Props> = ({
   clientOrder,
   refreshTable,
 }) => {
-
   return (
     <Modal
       isOpen={modalIsOpen}
@@ -59,6 +58,7 @@ export const ShowOrderModal: FC<Props> = ({
         <div className="overflow-auto mx-7 my-3 max-h-[220px] scrollbar">
           <TableOrdersInModal
             orders={clientOrder?.order}
+            clientOrder={clientOrder}
             refreshTable={refreshTable}
             closeModalOrderTable={closeModal}
           />

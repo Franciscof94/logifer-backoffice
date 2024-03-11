@@ -20,9 +20,15 @@ interface Props {
     label: string;
   };
   isDisabled?: boolean;
+  className?: string;
 }
 
-export const CustomSelect: FC<Props> = ({ async, name, ...props }) => {
+export const CustomSelect: FC<Props> = ({
+  async,
+  name,
+  className,
+  ...props
+}) => {
   const { options } = props;
 
   const Component = async ? AsyncSelect : Select;
@@ -51,7 +57,7 @@ export const CustomSelect: FC<Props> = ({ async, name, ...props }) => {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className={`flex flex-col ${className}`}>
       <Controller
         name={name}
         control={control}
@@ -74,13 +80,15 @@ export const CustomSelect: FC<Props> = ({ async, name, ...props }) => {
         )}
       />
 
-      <div className="mt-2">
-        <ErrorMessage
-          errors={errors}
-          name={name}
-          render={({ message }) => <p>{message}</p>}
-        />
-      </div>
+      {Object.keys(errors).length > 0 && (
+        <div className="mt-2">
+          <ErrorMessage
+            errors={errors}
+            name={name}
+            render={({ message }) => <p>{message}</p>}
+          />
+        </div>
+      )}
     </div>
   );
 };

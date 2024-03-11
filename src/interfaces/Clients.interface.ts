@@ -11,6 +11,8 @@ export interface IClient {
 export interface IClientOrder {
   orderDate: string;
   client: string;
+  total: number;
+  discount: string;
   send: boolean;
   deliveryDate?: string;
   order: IOrderModal[];

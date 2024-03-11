@@ -4,6 +4,7 @@ import { FaTimes } from "react-icons/fa";
 import { Button } from "../customs/Button";
 import { InputNumber } from "../customs/InputNumber";
 import { useSelector } from "react-redux";
+import { InputText } from "../customs/InputText";
 
 interface Props {
   modalIsOpen: boolean;
@@ -63,7 +64,18 @@ export const EditProductModal: FC<Props> = ({
             <small className=""> {product}</small>
           </p>
           <div>
-            <InputNumber count={count} handleChange={handleChange} />
+            <InputNumber
+              count={count}
+              handleChange={handleChange}
+              step="0.01"
+            />
+            {/* <InputText
+              value={count || 0}
+              placeholder="Cantidad"
+              type="number"
+              step="0.01"
+              handleChange={handleChange}
+            /> */}
           </div>
         </div>
         <hr className="my-2 border-grey" />

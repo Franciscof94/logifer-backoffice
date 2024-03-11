@@ -22,6 +22,8 @@ const columns = [
   "Fecha de creación",
   "Cliente",
   "Fecha de entrega",
+  "Descuento",
+  "Total",
   "Dirección",
   "Pedido enviado",
 ];
@@ -66,6 +68,8 @@ export const TableOrders: FC<Props> = ({
   const handleChangePage = (page: number) => {
     refreshTable(page, 9);
   };
+
+  console.log(orders);
 
   return (
     <div className="">
@@ -132,6 +136,15 @@ export const TableOrders: FC<Props> = ({
                       </td>
                       <td key={rowIndex} className="text-grey-70 px-4 py-2">
                         {row.deliveryDate}
+                      </td>
+                      <td
+                        key={rowIndex}
+                        className="text-green font-semibold px-4 py-2"
+                      >
+                        {row.discount}
+                      </td>
+                      <td key={rowIndex} className="text-grey-70 px-4 py-2">
+                        ${row.total}
                       </td>
                       <td key={rowIndex} className="text-grey-70 px-4 py-2">
                         {row.address}

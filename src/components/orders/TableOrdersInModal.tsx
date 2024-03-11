@@ -1,5 +1,5 @@
 import { ChangeEvent, FC, useEffect, useState } from "react";
-import { IOrderModal, Order } from "../../interfaces";
+import { IClientOrder, IOrderModal, Order } from "../../interfaces";
 import { TiDelete } from "react-icons/ti";
 import { DeleteProductModal } from "./DeleteProductModal";
 import { EditProductModal } from "./EditProductModal";
@@ -14,12 +14,14 @@ interface Props {
   orders: IOrderModal[] | undefined;
   refreshTable: () => void;
   closeModalOrderTable: () => void;
+  clientOrder: IClientOrder | undefined;
 }
 
 export const TableOrdersInModal: FC<Props> = ({
   orders,
   refreshTable,
   closeModalOrderTable,
+  clientOrder,
 }) => {
   const dispatch = useDispatch();
 
@@ -124,14 +126,11 @@ export const TableOrdersInModal: FC<Props> = ({
     }
   };
 
-  const total = ordersTable?.reduce((acc, row) => {
-    const price = parseFloat(row.price.replace("$", ""));
-    return acc + price * row.count;
-  }, 0);
-
   useEffect(() => {
     setUpdatedCount(rowSelected?.count);
   }, [rowSelected?.count, modalEditIsOpen]);
+
+  console.log(clientOrder);
 
   return (
     <div>
@@ -178,7 +177,7 @@ export const TableOrdersInModal: FC<Props> = ({
                   </div>
                 </td>
                 <td key={rowIndex} className="text-grey-70 px-4 text-start">
-                  {row.price}
+                  ${row.price}
                 </td>
                 <td
                   key={rowIndex}
@@ -199,9 +198,10 @@ export const TableOrdersInModal: FC<Props> = ({
         </tbody>
       </table>
       <div className="flex justify-end text-white text-xl  w-full">
+        {clientOrder?.discount ? <small className="text-green font-semibold px-2">10% descuento</small> : null}
         <div className="flex justify-start min-w-36 px-3 bg-grey-50 ">
           <p>
-            Total: <small className="font-medium">${total}</small>
+            Total: <small className="font-medium">${clientOrder?.total}</small>
           </p>
         </div>
       </div>

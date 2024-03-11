@@ -48,6 +48,7 @@ export const NewOrder = () => {
   const clientValue = watch("client");
   const productValue = watch("product");
   const unitTypeValue = watch("unitType");
+  const discountValue = watch("discount");
 
   const findProduct = productsOptions.find(
     (product: { value: number; label: string }) =>
@@ -86,6 +87,7 @@ export const NewOrder = () => {
           name: findProduct?.label ?? "",
           id: findProduct?.value ?? undefined,
         },
+
         address: order.address,
         client: {
           label: findClient?.label ?? "",
@@ -125,6 +127,7 @@ export const NewOrder = () => {
         const { client, price, product, id, ...orderWithoutClient } = ctOrder;
         return {
           ...orderWithoutClient,
+          discount: discountValue,
           clientId: ctOrder.client.value,
           productId: ctOrder.product.id,
         };
@@ -135,14 +138,14 @@ export const NewOrder = () => {
       setTimeout(() => {
         navigate("/pedidos");
       }, 1000);
-      dispatch(setLoadingButton(false));
     } catch (error: Error | AxiosError | any) {
-      dispatch(setLoadingButton(false));
       if (error.response && error.response.status === 400) {
         toast.error(error.response.data.message);
       } else {
         toast.error("Ocurrió un error al procesar la solicitud");
       }
+    } finally {
+      dispatch(setLoadingButton(false));
     }
   };
 
@@ -151,7 +154,6 @@ export const NewOrder = () => {
     dispatch(fetchProductsOptions());
     dispatch(fetchUnitTypeOptions());
   }, [dispatch]);
-
 
   useEffect(() => {
     if (findClient) {
@@ -194,7 +196,7 @@ export const NewOrder = () => {
         </div>
 
         <div className="flex justify-center">
-          <div className="w-[815px] flex items-baseline">
+          <div className="w-[815px] flex items-end">
             <p className="text-3xl font-medium">Cliente:</p>
             <p className="text-xl px-2">{clientNameStore?.label}</p>
           </div>

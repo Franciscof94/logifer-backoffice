@@ -3,6 +3,7 @@ export interface IOrder {
   client: number | null;
   count: number | null;
   address: string;
+  discount: boolean;
   unitType: number;
   unit?: string;
   id?: number;
@@ -16,6 +17,7 @@ export interface IOrderTable {
     id: number;
     name: string | undefined;
   };
+  discount: boolean;
   client: {
     label: string;
     value: number | undefined;
@@ -57,6 +59,8 @@ export interface Data {
   client: string;
   deliveryDate: string;
   orderDate: string;
+  discount: string;
+  total: number;
   send: boolean;
   address: string;
   order: Order[];

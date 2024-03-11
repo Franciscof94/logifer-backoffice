@@ -4,6 +4,7 @@ import { BiSolidEdit } from "react-icons/bi";
 import { DeleteProductModal } from "./DeleteProductModal";
 import { EditProductModal } from "./EditProductModal";
 import { IOrderTable } from "../../interfaces";
+import { useFormContext } from "react-hook-form";
 interface Props {
   data: IOrderTable[];
   setNewOrders: (order: any) => void;
@@ -23,6 +24,9 @@ export const TableNewOrder: FC<Props> = ({
     null
   );
   const columns = ["Producto", "Cantidad", "Dirección", "Acción"];
+
+  const { register, watch } = useFormContext();
+  const discountValue = watch("discount");
 
   const openModalDelete = (row: IOrderTable) => {
     setIsOpenModalDelete(true);
@@ -74,7 +78,13 @@ export const TableNewOrder: FC<Props> = ({
 
   const total = arrayProducts?.reduce((acc: number, row: any) => {
     const price = parseFloat(row.price.toString().replace("$", ""));
-    if (row.count) return acc + price * row.count;
+    if (row.count) {
+      let subtotal = price * row.count;
+      if (discountValue) {
+        subtotal *= 0.9; // Aplica un descuento del 10%
+      }
+      return acc + subtotal;
+    }
     return acc;
   }, 0);
 
@@ -174,7 +184,11 @@ export const TableNewOrder: FC<Props> = ({
           title="producto"
         />
       </div>
-      <div className="w-full flex justify-end">
+      <div className="w-full flex justify-end items-center font-bold">
+        <div className="px-6">
+          <label className="text-black px-2">Aplicar descuento (10%)</label>
+          <input {...register("discount")} type="checkbox" name="discount" />
+        </div>
         <div
           className="w-40 bg-grey-50 flex items-center px-3"
           style={{ borderRadius: "0 0 4px 0" }}
