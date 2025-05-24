@@ -1,32 +1,38 @@
 export interface IOrder {
-  product: number | null;
-  client: number | null;
-  count: number | null;
+  product: string;
+  client: string;
+  count: number | undefined;
   address: string;
-  discount: boolean;
-  unitType: number;
+  discount: number;
+  unitType: string;
   unit?: string;
-  id?: number;
+  id?: string;
 }
+
 export interface IOrderWithClientId extends Omit<IOrder, "client"> {
-  clientId: number | null;
+  clientId: string | null;
 }
 
 export interface IOrderTable {
   product: {
-    id: number;
-    name: string | undefined;
+    id: string;
+    name: string;
   };
-  discount: boolean;
+  discount: number;
   client: {
     label: string;
-    value: number | undefined;
+    value: string;
   };
   price: number;
   count: number | null;
   address: string;
   unit?: string;
-  id?: number;
+  id?: string;
+  unitType?: {
+    id: string;
+    label: string;
+    equivalencyValue: number;
+  };
 }
 
 export interface IOrderFilter {
@@ -36,9 +42,9 @@ export interface IOrderFilter {
 }
 
 export interface IOrderModal {
-  id: number;
+  id: string;
   product: {
-    id: number;
+    id: string;
     name: string;
   };
   count: number;
@@ -55,11 +61,11 @@ export interface IOrderResponse {
 }
 
 export interface Data {
-  id: number;
+  id: string;
   client: string;
   deliveryDate: string;
   orderDate: string;
-  discount: string;
+  discount: number;
   total: number;
   send: boolean;
   address: string;
@@ -67,11 +73,25 @@ export interface Data {
 }
 
 export interface Order {
-  id: number;
+  id: string;
   product: {
-    id: number;
+    id: string;
     name: string;
   };
   count: number;
   price: string;
+}
+
+export interface CreateOrderPayload {
+  clientId: string;
+  address: string;
+  orderDate: string;
+  total: number;
+  products: {
+    productId: string;
+    count: number;
+    unitTypeId: string;
+  }[];
+  discount: number;
+  deliveryDate: string | null;
 }

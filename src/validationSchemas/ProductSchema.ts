@@ -1,7 +1,7 @@
 import { number, object, string } from "yup";
 
 export const ProductSchema = object({
-  product: string()
+  productName: string()
     .required("El campo es obligatorio")
     .min(3, "El número mínimo de caracteres es 3"),
   stock: number()

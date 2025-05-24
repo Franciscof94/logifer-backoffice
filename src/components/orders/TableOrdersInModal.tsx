@@ -6,9 +6,11 @@ import { EditProductModal } from "./EditProductModal";
 import OrdersService from "../../services/orders/ordersService";
 import { BiSolidEdit } from "react-icons/bi";
 import { toast } from "react-toastify";
-import { AxiosError } from "axios";
 import { setLoadingButton } from "../../store/slices/uiSlice";
 import { useDispatch } from "react-redux";
+import axios from "axios";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "../customs/DataTable";
 
 interface Props {
   orders: IOrderModal[] | undefined;
@@ -25,14 +27,21 @@ export const TableOrdersInModal: FC<Props> = ({
 }) => {
   const dispatch = useDispatch();
 
-  const [updatedCount, setUpdatedCount] = useState<number | undefined | null>(
-    null
-  );
+  const [updatedCount, setUpdatedCount] = useState<number | undefined>(undefined);
   const [modalEditIsOpen, setModalEditIsOpen] = useState(false);
   const [ordersTable, setOrdersTable] = useState<IOrderModal[] | undefined>([]);
   const [rowSelected, setRowSelected] = useState<Order>();
   const [modalDeleteIsOpen, setModalDeleteIsOpen] = useState(false);
-  const columns = ["Producto", "Cantidad", "Precio por unidad", "Acción"];
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const closeModalDelete = () => {
     setModalDeleteIsOpen(false);
@@ -48,8 +57,8 @@ export const TableOrdersInModal: FC<Props> = ({
   };
 
   const handleDelete = async (
-    orderId: number | undefined,
-    productId: number | undefined
+    orderId: string | undefined,
+    productId: string | undefined
   ) => {
     try {
       dispatch(setLoadingButton(true));
@@ -108,9 +117,13 @@ export const TableOrdersInModal: FC<Props> = ({
       dispatch(setLoadingButton(false));
       toast.success("Cantidad editada correctamente");
       closeModalEdit();
-    } catch (error: Error | AxiosError | any) {
+    } catch (error: unknown) {
       dispatch(setLoadingButton(false));
-      if (error.response && error.response.status === 400) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response &&
+        error.response.status === 400
+      ) {
         toast.error(error.response.data.message);
       } else {
         toast.error("Ocurrió un error al procesar la solicitud");
@@ -122,7 +135,7 @@ export const TableOrdersInModal: FC<Props> = ({
     const value = e.target.value;
 
     if (/^\d*\.?\d*$/.test(value) || value === "") {
-      setUpdatedCount(Number(value));
+      setUpdatedCount(value === "" ? undefined : Number(value));
     }
   };
 
@@ -130,81 +143,96 @@ export const TableOrdersInModal: FC<Props> = ({
     setUpdatedCount(rowSelected?.count);
   }, [rowSelected?.count, modalEditIsOpen]);
 
-  console.log(clientOrder);
+  const columns: ColumnDef<IOrderModal>[] = [
+    {
+      id: "product",
+      header: "Producto",
+      cell: ({ row }) => (
+        <span className={`text-grey-70 ${isMobile ? "text-sm" : ""}`}>
+          {row.original.product.name}
+        </span>
+      ),
+    },
+    {
+      id: "quantity",
+      header: "Cantidad",
+      cell: ({ row }) => (
+        <div className={`text-grey-70 flex items-center ${isMobile ? "text-sm" : ""}`}>
+          <small>{row.original.count}</small>
+          <small>{row.original.unit}</small>
+          <div className="px-2">
+            <BiSolidEdit
+              className={`cursor-pointer ${isMobile ? "text-sm" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                openModalEdit(row.original);
+              }}
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "price",
+      header: "Precio por unidad",
+      cell: ({ row }) => (
+        <span className={`text-grey-70 ${isMobile ? "text-sm" : ""}`}>
+          ${row.original.price}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: () => <div className="text-center">Acción</div>,
+      cell: ({ row }) => (
+        <div className="flex justify-center">
+          <TiDelete
+            color="#F44336"
+            className="cursor-pointer"
+            size={isMobile ? 20 : 24}
+            onClick={(e) => {
+              e.stopPropagation();
+              openModalDelete(row.original);
+            }}
+          />
+        </div>
+      ),
+    },
+  ];
 
   return (
-    <div>
-      <table className="w-full rounded-sm overflow-hidden">
-        <thead className="bg-grey-50 h-11">
-          <tr>
-            {columns.map((col, i) => {
-              const textAlignClass =
-                i === columns.length - 1 ? "text-end" : "text-start";
-              return (
-                <th
-                  key={col}
-                  className={`text-white font-semibold px-4 ${textAlignClass}`}
-                >
-                  {col}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody className="">
-          {ordersTable?.map((row, rowIndex) => (
-            <>
-              <tr
-                key={rowIndex}
-                className={rowIndex % 2 === 0 ? "" : "bg-grey"}
-              >
-                <td key={rowIndex} className="text-grey-70 px-4">
-                  {row.product.name}
-                </td>
-                <td
-                  key={rowIndex}
-                  className="text-grey-70 px-4 flex items-center"
-                >
-                  <small> {row.count}</small>
-                  <small> {row.unit}</small>
-                  <div
-                    className="px-2"
-                    onClick={() => {
-                      openModalEdit(row);
-                    }}
-                  >
-                    <BiSolidEdit className="cursor-pointer" />
-                  </div>
-                </td>
-                <td key={rowIndex} className="text-grey-70 px-4 text-start">
-                  ${row.price}
-                </td>
-                <td
-                  key={rowIndex}
-                  className="text-grey-70 px-7 flex justify-end py-2"
-                >
-                  <TiDelete
-                    color="#F44336"
-                    className="cursor-pointer"
-                    size={24}
-                    onClick={() => {
-                      openModalDelete(row);
-                    }}
-                  />
-                </td>
-              </tr>
-            </>
-          ))}
-        </tbody>
-      </table>
-      <div className="flex justify-end text-white text-xl  w-full">
-        {clientOrder?.discount ? <small className="text-green font-semibold px-2">10% descuento</small> : null}
-        <div className="flex justify-start min-w-36 px-3 bg-grey-50 ">
+    <div className="w-full">
+      <div className={`${isMobile ? "overflow-x-auto w-full" : ""}`}>
+        <DataTable
+          columns={columns}
+          data={ordersTable || []}
+          className="bg-white"
+        />
+      </div>
+
+      <div
+        className={`flex ${
+          isMobile ? "justify-end mt-3" : "justify-end mt-2"
+        } text-white ${isMobile ? "text-base" : "text-xl"} w-full`}
+      >
+        {clientOrder?.discount ? (
+          <small
+            className={`text-green font-semibold ${isMobile ? "px-1" : "px-2"}`}
+          >
+            {clientOrder.discount}% descuento
+          </small>
+        ) : null}
+        <div
+          className={`flex justify-start ${
+            isMobile ? "min-w-28 px-2" : "min-w-36 px-3"
+          } bg-grey-50`}
+        >
           <p>
             Total: <small className="font-medium">${clientOrder?.total}</small>
           </p>
         </div>
       </div>
+
       <EditProductModal
         closeModal={closeModalEdit}
         count={updatedCount}
@@ -219,7 +247,7 @@ export const TableOrdersInModal: FC<Props> = ({
         modalIsOpen={modalDeleteIsOpen}
         product={rowSelected?.product}
         orderId={rowSelected?.id}
-        handleDelete={handleDelete}
+        handleDelete={(id) => handleDelete(id, rowSelected?.product.id)}
       />
     </div>
   );

@@ -35,7 +35,7 @@ export const DeleteClientModal: FC<Props> = ({
   client,
   handleDelete,
 }) => {
-  const { isLoadingButton } = useSelector((state: any) => state.uiData);
+  const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
   return (
     <Modal
       isOpen={modalIsOpen}

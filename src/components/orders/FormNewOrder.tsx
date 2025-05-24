@@ -2,24 +2,26 @@ import { Link } from "react-router-dom";
 import { Button } from "../customs/Button";
 import { CustomSelect } from "../customs/CustomSelect";
 import { InputText } from "../customs/InputText";
-import { SubmitHandler } from "react-hook-form";
-import { FC } from "react";
-import {
-  IClientsSelectOptions,
-  IOrder,
-  IProductsOptions,
-  IUnitTypeOptions,
-} from "../../interfaces";
+import { SubmitHandler, UseFormReturn } from "react-hook-form";
+import { FC, useEffect, useState } from "react";
+import { IOrder } from "../../interfaces";
 import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
+import {
+  IClientOption,
+  IProductOption,
+  IUnitTypeOption,
+} from "../../interfaces/SelectOptions.interface";
 
 interface Props {
-  methods: any;
+  methods: UseFormReturn<IOrder>;
   handleSetOrder: (data: IOrder) => void;
-  products: IProductsOptions[];
-  clients: IClientsSelectOptions[];
-  unitTypeOptions: IUnitTypeOptions[];
+  products: IProductOption[];
+  clients: IClientOption[];
+  unitTypeOptions: IUnitTypeOption[];
   isSelectCountDisabled: boolean | undefined;
-  stock: number;
+  stock: number | undefined;
+  isLoading?: boolean;
 }
 
 export const FormNewOrder: FC<Props> = ({
@@ -30,30 +32,57 @@ export const FormNewOrder: FC<Props> = ({
   clients,
   isSelectCountDisabled,
   stock,
+  isLoading = false,
 }) => {
   const {
     handleSubmit,
     formState: { isValid },
+    watch
   } = methods;
+
   const { addressAndClientNameDisabled } = useSelector(
-    (state: any) => state.ordersData
+    (state: RootState) => state.ordersData
   );
+
   const onSubmit: SubmitHandler<IOrder> = (data) => {
-    console.log(data);
     handleSetOrder(data);
   };
 
-  const clientsWithoutAddress = clients.map((client) => {
-    const { address, ...clientWithoutAddress } = client;
-    return clientWithoutAddress;
-  });
+  const clientsWithoutAddress = clients.map(
+    ({ address: _, ...clientWithoutAddress }) => clientWithoutAddress
+  );
+
+  // Estado para detectar si estamos en móvil
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Efecto para actualizar el estado cuando cambia el tamaño de la ventana
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Watch all required fields
+  const product = watch("product");
+  const client = watch("client");
+  const unitType = watch("unitType");
+  const count = watch("count");
+  const address = watch("address");
+
+  // Check if all required fields are filled
+  const allFieldsFilled = product && client && unitType && count && address;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="w-[815px]">
-        <div className="flex gap-x-20">
-          <div className="flex flex-col w-1/2 ">
-            <label className="text-xl mb-1">
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+      <div className={`${isMobile ? "w-full" : "mx-auto w-[815px]"}`}>
+        <div
+          className={`${isMobile ? "flex flex-col gap-y-6" : "flex gap-x-20"}`}
+        >
+          <div className={`flex flex-col ${isMobile ? "w-full" : "w-1/2"}`}>
+            <label className={`${isMobile ? "text-lg" : "text-xl"} mb-1`}>
               Producto{" "}
               {stock === 0 && (
                 <small className="text-danger font-medium px-2">
@@ -63,8 +92,13 @@ export const FormNewOrder: FC<Props> = ({
             </label>
             <CustomSelect
               name="product"
-              options={products}
-              placeholder={"Seleccionar"}
+              options={products.map((product) => ({
+                value: product.id,
+                label: product.productName ?? "",
+              }))}
+              placeholder={isLoading ? "Cargando..." : "Seleccionar"}
+              className="w-full"
+              isDisabled={isLoading}
             />
             <div className="flex mt-1">
               <p className="font-normal">No existe el producto?</p>
@@ -76,35 +110,54 @@ export const FormNewOrder: FC<Props> = ({
               </Link>
             </div>
           </div>
-          <div className="flex justify-between w-1/2 ">
-            <div className="flex flex-col min-w-44 max-w-44 w-full">
-              <label className="text-xl mb-1">Tipo de unidad</label>
+          <div
+            className={`${
+              isMobile ? "flex flex-col gap-y-6" : "flex justify-between w-1/2"
+            }`}
+          >
+            <div className={`flex flex-col ${isMobile ? "w-full" : "w-[48%]"}`}>
+              <label className={`${isMobile ? "text-lg" : "text-xl"} mb-1`}>
+                Tipo de unidad
+              </label>
               <CustomSelect
                 name="unitType"
                 options={unitTypeOptions}
-                placeholder={"Seleccionar"}
+                placeholder={isLoading ? "Cargando..." : "Seleccionar"}
+                className="w-full"
+                isDisabled={isLoading}
               />
             </div>
-            <div className="flex flex-col min-w-44 max-w-44 w-full">
-              <label className="text-xl mb-1">Cantidad</label>
+            <div className={`flex flex-col ${isMobile ? "w-full" : "w-[48%]"}`}>
+              <label className={`${isMobile ? "text-lg" : "text-xl"} mb-1`}>
+                Cantidad
+              </label>
               <InputText
                 name="count"
                 placeholder="Cantidad"
                 type="number"
                 step="0.01"
-                disabled={isSelectCountDisabled}
+                disabled={isSelectCountDisabled || isLoading}
+                className="w-full"
               />
             </div>
           </div>
         </div>
-        <div className="flex gap-x-20 mt-10">
-          <div className="flex flex-col w-1/2 ">
-            <label className="text-xl mb-1">Cliente</label>
+
+        <div
+          className={`${
+            isMobile ? "flex flex-col gap-y-6 mt-6" : "flex gap-x-20 mt-10"
+          }`}
+        >
+          <div className={`flex flex-col ${isMobile ? "w-full" : "w-1/2"}`}>
+            <label className={`${isMobile ? "text-lg" : "text-xl"} mb-1`}>
+              Cliente
+            </label>
             <CustomSelect
               name="client"
               options={clientsWithoutAddress}
-              placeholder={"Seleccionar"}
-              isDisabled={addressAndClientNameDisabled}
+              placeholder={isLoading ? "Cargando..." : "Seleccionar"}
+              isDisabled={addressAndClientNameDisabled || isLoading}
+              className="w-full"
             />
             <div className="flex mt-1">
               <p className="font-normal">No existe el cliente?</p>
@@ -116,24 +169,32 @@ export const FormNewOrder: FC<Props> = ({
               </Link>
             </div>
           </div>
-          <div className="flex flex-col w-1/2 ">
-            <label className="text-xl mb-1">Dirección</label>
+          <div className={`flex flex-col ${isMobile ? "w-full" : "w-1/2"}`}>
+            <label className={`${isMobile ? "text-lg" : "text-xl"} mb-1`}>
+              Dirección
+            </label>
             <InputText
               name="address"
               placeholder="Dirección"
               type="text"
-              disabled={addressAndClientNameDisabled ? true : false}
+              disabled={addressAndClientNameDisabled || isLoading}
+              className={`w-full ${addressAndClientNameDisabled ? 'bg-gray-200 text-gray-700 border-gray-300' : ''}`}
             />
           </div>
         </div>
-        <div className="flex justify-end mt-6">
+
+        <div
+          className={`flex ${
+            isMobile ? "justify-center mt-6" : "justify-end mt-8"
+          }`}
+        >
           <Button
-            disabled={!isValid}
+            disabled={!allFieldsFilled || !isValid || isLoading}
             legend="Agregar"
-            size="xl"
-            width="139px"
+            size={isMobile ? "lg" : "xl"}
+            width={isMobile ? "100%" : "139px"}
             height="36px"
-            color={isValid ? "blue" : "grey-50"}
+            color={allFieldsFilled && isValid && !isLoading ? "blue" : "grey-50"}
             weight="font-light"
             type="submit"
           />

@@ -11,9 +11,10 @@ import { useDispatch, useSelector } from "react-redux";
 
 interface Props {
   methods: any;
+  isMobile?: boolean;
 }
 
-export const FormNewProduct: FC<Props> = ({ methods }) => {
+export const FormNewProduct: FC<Props> = ({ methods, isMobile = false }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -39,41 +40,47 @@ export const FormNewProduct: FC<Props> = ({ methods }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} className={isMobile ? "w-full" : ""}>
       <div className="flex flex-col">
-        <label className="text-xl mb-1">Nombre del producto</label>
+        <label className={`${isMobile ? 'text-lg' : 'text-xl'} mb-1`}>Nombre del producto</label>
         <InputText
           placeholder="Nombre del producto"
           type="text"
-          width="w-[813px]"
-          name="product"
+          width={isMobile ? "w-full" : "w-[813px]"}
+          name="productName"
         />
       </div>
-      <div className="flex gap-x-16 mt-8">
-        <div className="flex flex-col flex-1">
-          <label className="text-xl mb-1">Precio</label>
+      <div className={`${isMobile ? 'flex flex-col gap-y-6' : 'flex gap-x-16'} mt-8`}>
+        <div className={`flex flex-col ${isMobile ? 'w-full' : 'flex-1'}`}>
+          <label className={`${isMobile ? 'text-lg' : 'text-xl'} mb-1`}>Precio</label>
           <InputText
             placeholder="Precio"
             type="number"
             name="price"
             step="0.01"
+            className="w-full"
           />
         </div>
-        <div className="flex flex-col flex-1">
-          <label className="text-xl mb-1">Stock</label>
-          <InputText placeholder="Stock" type="text" name="stock" />
+        <div className={`flex flex-col ${isMobile ? 'w-full' : 'flex-1'}`}>
+          <label className={`${isMobile ? 'text-lg' : 'text-xl'} mb-1`}>Stock</label>
+          <InputText 
+            placeholder="Stock" 
+            type="text" 
+            name="stock" 
+            className="w-full"
+          />
         </div>
       </div>
-      <div className="flex justify-end mt-10">
+      <div className={`flex ${isMobile ? 'justify-center mt-6' : 'justify-end mt-10'}`}>
         <Button
           color={isValid ? "blue" : "grey-50"}
           height="36px"
           legend="Guardar"
-          size="xl"
+          size={isMobile ? "lg" : "xl"}
           isLoading={isLoadingButton}
           disabled={isLoadingButton || !isValid}
           weight="normal"
-          width="140px"
+          width={isMobile ? "100%" : "140px"}
         />
       </div>
       <ToastContainer />

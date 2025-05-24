@@ -1,4 +1,3 @@
-import { Title } from "../components/Title";
 import { TableFilters } from "../components/clients/TableFilters";
 import { TableClients } from "../components/clients/TableClients";
 import { FormProvider, useForm } from "react-hook-form";
@@ -49,18 +48,12 @@ export const Clients = () => {
     [filters, dispatch]
   );
 
-
   useEffect(() => {
     fetchClients();
   }, [fetchClients, filters]);
 
   return (
     <div>
-      <div className="flex justify-center items-center">
-        <div className="w-full max-w-[1300px] m-auto my-8">
-          <Title title="Clientes" />
-        </div>
-      </div>
       <div className="flex justify-center items-center">
         <div className="w-full max-w-[1300px] m-auto">
           <FormProvider {...methods}>

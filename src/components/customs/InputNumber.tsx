@@ -7,14 +7,15 @@ interface Props {
 }
 
 export const InputNumber: FC<Props> = ({ count, handleChange, ...props }) => {
+  const displayValue = count === null || count === undefined ? "" : count;
+  
   return (
     <div className="flex justify-center my-2 ">
-
       <input
         {...props}
         type="number"
         className="h-8 max-w-16 text-center bg-grey rounded"
-        value={count || 0}
+        value={displayValue}
         onChange={handleChange}
       />
     </div>

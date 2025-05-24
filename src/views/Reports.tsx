@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Title } from "../components";
 import { Button } from "../components/customs/Button";
 import { ProductsReports } from "../components/reports/ProductsReports";
 import { SalesReports } from "../components/reports/SalesReports";
@@ -9,11 +8,6 @@ export const Reports = () => {
 
   return (
     <div>
-      <div className="flex justify-center items-center">
-        <div className="w-full max-w-[1300px] m-auto my-8">
-          <Title title="Reportes" />
-        </div>
-      </div>
       <div className="flex justify-center items-center">
         <div className="w-full max-w-[1300px] m-auto my-3 flex justify-center gap-x-2.5">
           <div>
@@ -46,13 +40,13 @@ export const Reports = () => {
       </div>
       {reportIs === "sales" ? (
         <div className="flex justify-center items-center ">
-          <div className="w-full max-w-[1300px] m-auto my-5 ">
+          <div className="w-full max-w-[1300px] m-auto  ">
             <SalesReports />
           </div>
         </div>
       ) : (
         <div className="flex justify-center items-center">
-          <div className="w-full max-w-[1300px] m-auto my-5">
+          <div className="w-full max-w-[1300px] m-auto">
             <ProductsReports />
           </div>
         </div>

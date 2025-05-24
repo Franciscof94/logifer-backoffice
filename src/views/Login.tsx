@@ -5,7 +5,6 @@ import { InputText } from "../components/customs/InputText";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { UserSchema } from "../validationSchemas";
 import { IUser } from "../interfaces";
-import { AxiosError } from "axios";
 import AuthService from "../services/auth/authService";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/slices/authSlice";
@@ -13,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ModalLoginError } from "../components/auth/ModalLoginError";
 import { setLoadingButton } from "../store/slices/uiSlice";
+import { RootState } from "@/store/store";
 
 export const Login = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -23,16 +23,16 @@ export const Login = () => {
     resolver: yupResolver(UserSchema),
     mode: "onChange",
     defaultValues: {
-      email: "admin@gmail.com",
-      password: "@Admin1",
+      email: "ferraromateriales@gmail.com",
+      password: "@Logifer2024",
     },
   });
 
   const { handleSubmit } = methods;
 
-  const auth = useSelector((state: any) => state.authData.auth);
+  const auth = useSelector((state: RootState) => state.authData.auth);
   
-  const { isLoadingButton } = useSelector((state: any) => state.uiData);
+  const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
 
   const closeModal = () => {
     setModalIsOpen(false);
@@ -69,7 +69,7 @@ export const Login = () => {
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex-1 flex bg-grey align-center justify-center">
-          <div className="w-[365px] mt-16">
+          <div className="w-[365px]">
             <h1 className="text-4xl font-medium text-black text-center py-11">
               Ingresar
             </h1>

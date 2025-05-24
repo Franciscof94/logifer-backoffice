@@ -8,7 +8,7 @@ interface Props {
 }
 
 export const RequireAuth: FC<Props> = ({ permissions = [] }) => {
-  const auth = useSelector((state: any) => state.authData.auth);
+  const auth = useSelector((state: RootState) => state.authData.auth);
   const location = useLocation();
 
   if (auth === undefined) {

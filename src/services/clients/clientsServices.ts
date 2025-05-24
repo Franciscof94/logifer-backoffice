@@ -4,7 +4,7 @@ import { IClient, IClientResponse, IClientsFilter } from "../../interfaces";
 
 const ClientsService = {
   postNewClient: async (client: IClient) => {
-    await axiosInstance.post("/clients/new-client", client);
+    await axiosInstance.post("/clients", client);
   },
   patchClient: async (clientId: number | undefined, client: IClient) => {
     await axiosInstance.patch(`/clients/edit-client/${clientId}`, client);

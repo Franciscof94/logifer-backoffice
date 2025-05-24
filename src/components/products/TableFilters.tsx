@@ -51,8 +51,7 @@ export const TableFilters: FC<Props> = ({ methods }) => {
           </div>
           <div className="flex gap-x-4">
             <Button
-              color=""
-              className="bg-[#818181]"
+              color="grey-50"
               height="45px"
               legend="Limpiar filtros"
               size="xl"

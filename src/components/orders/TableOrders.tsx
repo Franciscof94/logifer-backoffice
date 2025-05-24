@@ -1,214 +1,213 @@
-import React, { CSSProperties, FC, useState } from "react";
+import React, { useState } from "react";
 import { TiDelete } from "react-icons/ti";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { TiTick } from "react-icons/ti";
 import { ToastContainer } from "react-toastify";
-import { useSelector } from "react-redux";
-import ClipLoader from "react-spinners/ClipLoader";
 import { ShowOrderModal } from "./ShowOrderModal";
 import { Pagination } from "../pagination/Pagination";
 import { Data, IClientOrder } from "../../interfaces";
 import { CheckOrderModal } from "./CheckOrderModal";
-import { IPagination } from "../../interfaces/Pagination.interface";
+import { ColumnDef } from "@tanstack/react-table";
+import { useOrders } from "../../hooks/queries/useOrders";
+import { useUpdateOrderStatus } from "../../hooks/mutations/useUpdateOrderStatus";
+import { DataTable } from "../customs/DataTable";
 
 interface Props {
-  refreshTable: (page?: number, size?: number) => void;
-  orders: Data[] | undefined;
-  pagination: IPagination | undefined;
+  page: number;
+  onPageChange: (page: number) => void;
 }
 
-const columns = [
-  "Producto y cantidades",
-  "Fecha de creación",
-  "Cliente",
-  "Fecha de entrega",
-  "Descuento",
-  "Total",
-  "Dirección",
-  "Pedido enviado",
-];
-
-const override: CSSProperties = {
-  display: "block",
-  margin: "3px auto",
-  borderColor: "#3342B1",
-};
-
-export const TableOrders: FC<Props> = ({
-  refreshTable,
-  orders,
-  pagination,
-}) => {
+export const TableOrders = ({ page, onPageChange }: Props) => {
   const [modalShowIsOpen, setIsOpenModalShow] = useState(false);
   const [modalCheckOrderIsOpen, setIsOpenModalCheckOrder] = useState(false);
-  const [orderSelected, setOrderSelected] = useState<Data>();
   const [clientSelected, setClientSelected] = useState<IClientOrder>();
+  const isMobile = window.innerWidth <= 640;
 
-  const { loadingTableOrders } = useSelector((state: any) => state.ordersData);
+  const { data: ordersData, isLoading } = useOrders(page);
+  const updateOrderStatus = useUpdateOrderStatus();
 
-  const openModalShow = (client: IClientOrder) => {
+  const handleCheckOrder = async (order: Data) => {
+    if (order.id) {
+      await updateOrderStatus.mutateAsync(order.id);
+    }
+  };
+
+  const columns: ColumnDef<Data>[] = [
+    {
+      id: "products",
+      header: "Producto y cantidades",
+      cell: ({ row }) => {
+        const data = row.original;
+        return (
+          <div className="flex items-center gap-3">
+            <div>
+              <MdOutlineRemoveRedEye 
+                className="cursor-pointer" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openModalShow(data);
+                }}
+              />
+            </div>
+            <span>
+              {data.order[0]?.product?.name}{" "}
+              {data.order.length > 1 ? `(+${data.order.length - 1})` : ""}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "orderDate",
+      header: "Fecha de creación",
+      cell: ({ row }) => <span>{row.original.orderDate}</span>,
+    },
+    {
+      id: "client",
+      header: "Cliente",
+      cell: ({ row }) => <span>{row.original.client}</span>,
+    },
+    {
+      id: "deliveryDate",
+      header: "Fecha de entrega",
+      cell: ({ row }) => <span>{row.original.deliveryDate}</span>,
+    },
+    {
+      id: "discount",
+      header: "Descuento",
+      cell: ({ row }) => (
+        <span className="text-green-600">{row.original.discount}%</span>
+      ),
+    },
+    {
+      id: "total",
+      header: "Total",
+      cell: ({ row }) => <span>${row.original.total}</span>,
+    },
+    {
+      id: "address",
+      header: "Dirección",
+      cell: ({ row }) => <span>{row.original.address}</span>,
+    },
+    {
+      id: "send",
+      header: "Pedido enviado",
+      cell: ({ row }) => (
+        <div className="flex justify-end pr-3">
+          {row.original.send ? (
+            <div className="bg-green-500 rounded-full p-1">
+              <TiTick className="text-white" size={16} />
+            </div>
+          ) : (
+            <TiDelete
+              onClick={(e) => {
+                e.stopPropagation();
+                row.original.id && handleCheckOrder(row.original);
+              }}
+              color="#F44336"
+              size={24}
+              className="cursor-pointer"
+            />
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  const openModalShow = (order: IClientOrder) => {
     setIsOpenModalShow(true);
-    setClientSelected(client);
+    setClientSelected(order);
   };
 
   const closeModalShow = () => {
-    /* refreshTable(); */
     setIsOpenModalShow(false);
-  };
-
-  const openModalCheckOrder = (order: Data) => {
-    setIsOpenModalCheckOrder(true);
-    setOrderSelected(order);
   };
 
   const closeModalCheckOrder = () => {
     setIsOpenModalCheckOrder(false);
   };
 
-  const handleChangePage = (page: number) => {
-    refreshTable(page, 9);
-  };
-
-  console.log(orders);
+  if (isMobile) {
+    return (
+      <div className="w-full gap-4 py-4">
+        {ordersData?.data.map((order) => (
+          <div
+            key={order.id}
+            className="rounded-md border border-gray-200 p-3 space-y-2"
+          >
+            <div className="flex justify-between items-center">
+              <span className="font-bold">Cliente: {order.client}</span>
+              <div>
+                {order.send ? (
+                  <div className="bg-green-500 rounded-full p-1">
+                    <TiTick className="text-white" size={16} />
+                  </div>
+                ) : (
+                  <TiDelete
+                    onClick={() => handleCheckOrder(order)}
+                    color="#F44336"
+                    size={24}
+                    className="cursor-pointer"
+                  />
+                )}
+              </div>
+            </div>
+            <div className="h-px bg-gray-200" />
+            <div className="space-y-2">
+              <p>Fecha creación: {order.orderDate}</p>
+              <p>Fecha entrega: {order.deliveryDate}</p>
+              <p>Descuento: {order.discount}%</p>
+              <p>Total: ${order.total}</p>
+              <p>Dirección: {order.address}</p>
+            </div>
+            <div className="text-center mt-2">
+              <button
+                className="text-blue-600 hover:text-blue-800"
+                onClick={() => openModalShow(order)}
+              >
+                Ver detalles
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <div className="">
-      <div className="max-h-[380px] scrollbar">
-        <div className="rounded-[5px] shadow-lg">
-          <table className="w-full rounded-sm overflow-hidden">
-            <thead className="bg-grey-50 h-11">
-              <tr>
-                {columns.map((col, i) => {
-                  const textAlignClass =
-                    i === columns.length - 1 ? "text-end" : "text-start";
-                  return (
-                    <th
-                      key={col}
-                      className={`text-white font-semibold px-4 ${textAlignClass}`}
-                    >
-                      {col}
-                    </th>
-                  );
-                })}
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {loadingTableOrders ? (
-                <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="text-center font-normal text-xl text-black py-2"
-                  >
-                    <ClipLoader
-                      color={"#3342B1"}
-                      loading={loadingTableOrders}
-                      cssOverride={override}
-                      size={35}
-                      aria-label="Loading Spinner"
-                      data-testid="loader"
-                    />
-                  </td>
-                </tr>
-              ) : orders?.length ? (
-                orders?.map((row, rowIndex: number) => (
-                  <React.Fragment key={rowIndex}>
-                    <tr
-                      key={rowIndex}
-                      className={rowIndex % 2 ? "bg-grey" : ""}
-                    >
-                      <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                        <div className="flex items-center">
-                          {" "}
-                          <div>Ver</div>
-                          <div
-                            className="px-2 "
-                            onClick={() => openModalShow(row)}
-                          >
-                            <MdOutlineRemoveRedEye className="cursor-pointer" />
-                          </div>
-                        </div>
-                      </td>
-                      <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                        {row.orderDate}
-                      </td>
-                      <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                        {row.client}
-                      </td>
-                      <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                        {row.deliveryDate}
-                      </td>
-                      <td
-                        key={rowIndex}
-                        className="text-green font-semibold px-4 py-2"
-                      >
-                        {row.discount}
-                      </td>
-                      <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                        ${row.total}
-                      </td>
-                      <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                        {row.address}
-                      </td>
-                      <td
-                        key={rowIndex}
-                        className="text-grey-70 px-14 flex justify-end  py-2"
-                      >
-                        {row.send ? (
-                          <div className="h-6 w-6 flex justify-center items-center">
-                            <div className="rounded-full bg-[#89C26D] h-4 w-4">
-                              <TiTick color="white" size={16} />
-                            </div>
-                          </div>
-                        ) : (
-                          <TiDelete
-                            onClick={() => {
-                              openModalCheckOrder(row);
-                            }}
-                            color="#F44336"
-                            size={24}
-                            className="cursor-pointer"
-                          />
-                        )}
-                      </td>
-                    </tr>
-                  </React.Fragment>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="text-center font-normal text-xl text-black py-2"
-                  >
-                    No hay ordenes
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+    <div>
+      <DataTable
+        columns={columns}
+        data={ordersData?.data || []}
+        isLoading={isLoading}
+        onRowClick={openModalShow}
+        className="bg-white"
+      />
+
+      <div className="mt-4 flex justify-end">
+        <Pagination
+          currentPage={page}
+          onChangePage={onPageChange}
+          totalItems={ordersData?.totalElements ?? 0}
+          filasPorPaginas={ordersData?.size}
+        />
       </div>
+
       <ToastContainer />
+
       <ShowOrderModal
         closeModal={closeModalShow}
         modalIsOpen={modalShowIsOpen}
         clientOrder={clientSelected}
-        refreshTable={refreshTable}
+        refreshTable={() => {}}
       />
+
       <CheckOrderModal
         closeModal={closeModalCheckOrder}
         modalIsOpen={modalCheckOrderIsOpen}
-        refreshTable={refreshTable}
-        order={orderSelected}
+        refreshTable={() => {}}
+        order={undefined}
       />
-
-      <div className="flex justify-end mt-12">
-        <Pagination
-          currentPage={pagination?.page ?? 0}
-          onChangePage={handleChangePage}
-          totalItems={pagination?.totalElements ?? 0}
-          filasPorPaginas={pagination?.size}
-        />
-      </div>
     </div>
   );
 };

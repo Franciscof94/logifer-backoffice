@@ -1,0 +1,33 @@
+/* Estilos para la animación del modal desde abajo */
+.ReactModal__Overlay {
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
+.bottom-modal {
+  transform: translateY(100%);
+  transition: transform 300ms ease-in-out;
+}
+
+.ReactModal__Content--after-open.bottom-modal {
+  transform: translateY(0);
+}
+
+.ReactModal__Content--before-close.bottom-modal {
+  transform: translateY(100%);
+}
+
+/* Añadir estilos para habilitar arrastrar en móvil */
+@media (max-width: 767px) {
+  .bottom-modal {
+    touch-action: none; /* Evita scroll durante arrastre */
+  }
+} 

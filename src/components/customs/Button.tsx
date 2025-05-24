@@ -2,12 +2,12 @@ import { FC } from "react";
 
 interface Props {
   legend: string;
-  width: string;
+  width?: string;
   size: string;
-  color: string;
+  color: 'rojo' | 'verde' | 'blue' | 'grey-50';
   height: string;
   weight: string;
-  onClick?: (e?: any) => void;
+  onClick?: (e?: React.MouseEvent<HTMLButtonElement> | undefined) => void;
   type?: "submit";
   disabled?: boolean;
   className?: string;
@@ -17,7 +17,6 @@ interface Props {
 export const Button: FC<Props> = ({
   legend,
   width,
-  size,
   color,
   height,
   weight,
@@ -26,14 +25,59 @@ export const Button: FC<Props> = ({
   disabled,
   ...props
 }) => {
+  // Mapeo correcto de colores a clases de Tailwind
+  const getColorClasses = () => {
+    switch (color) {
+      case 'rojo':
+        return 'bg-danger hover:bg-danger/90 text-white';
+      case 'verde':
+        return 'bg-green hover:bg-green/90 text-white';
+      case 'blue':
+        return 'bg-blue hover:bg-blue/90 text-white';
+      case 'grey-50':
+        return 'bg-[#B8B8B8] hover:bg-[#a0a0a0] text-black';
+      default:
+        return 'bg-blue hover:bg-blue/90 text-white';
+    }
+  };
+
+  // Mapeo correcto de tamaños de texto
+  const getTextSize = (size?: string | undefined) => {
+    switch (size) {
+      case 'xs': return 'text-xs';
+      case 'sm': return 'text-sm'; // Standardize to text-sm
+      case 'base': return 'text-base';
+      case 'lg': return 'text-lg';
+      case 'xl': return 'text-xl';
+      case '2xl': return 'text-2xl';
+      default: return 'text-base';
+    }
+  };
+
+  // Mapeo correcto de pesos de fuente
+  const getFontWeight = () => {
+    switch (weight) {
+      case 'normal': return 'font-normal';
+      case 'medium': return 'font-medium';
+      case 'semibold': return 'font-semibold';
+      case 'bold': return 'font-bold';
+      default: return 'font-medium';
+    }
+  };
+
+  const colorClasses = getColorClasses();
+  const textSizeClass = getTextSize();
+  const fontWeightClass = getFontWeight();
+  const baseClasses = `${fontWeightClass} ${textSizeClass} rounded-md`;
+  const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';
+
   return (
     <button
-      className={`bg-${color} text-white font-${weight} rounded-md text-${size} ${className}`}
+      className={`${baseClasses} ${colorClasses} ${className || ''} ${disabledClasses}`.trim()}
       style={{ width: `${width}`, height: `${height}` }}
       {...props}
       disabled={disabled}
     >
-      {" "}
       <div className="flex items-center justify-center">
         {isLoading && (
           <svg

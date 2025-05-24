@@ -23,7 +23,8 @@ export const InputText: FC<Props> = ({
   type,
   width,
   color,
-  name,
+  name = "",
+  disabled,
   ...props
 }) => {
   const methods = useFormContext();
@@ -39,9 +40,10 @@ export const InputText: FC<Props> = ({
       <input
         {...register(name ?? "")}
         {...inputProps}
+        disabled={disabled}
         type={type}
-        className={`${color ? color : ""} rounded-md shadow-lg h-11 px-3 ${
-          width ? width : ""
+        className={`${color ? color : ""} rounded-md h-11 px-3 ${disabled ? "bg-gray-200" : ""} ${
+          width ?? ''
         }`}
         placeholder={placeholder}
       />

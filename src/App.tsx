@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { RequireAuth, Footer, Header } from "./components";
+import { RequireAuth, Header } from "./components";
 import { VIEW_HOME } from "./constants/permissions";
 import Dashboard from "./containers/dashboard/Dashboard";
 import PublicContainer from "./containers/public/PublicContainer";
@@ -14,10 +14,10 @@ import { Home } from "./views/Home";
 
 function App() {
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen overflow-hidden">
       <Header />
 
-      <div className="h-screen bg-grey">
+      <div className="flex-1 overflow-hidden">
         <Routes>
           <Route element={<PublicContainer />}>
             <Route path={PUBLIC_ROUTE.LOGIN} element={<Login />} />
@@ -74,8 +74,6 @@ function App() {
           <Route path="*" element={<Missing />} />
         </Routes>
       </div>
-
-      <Footer />
     </div>
   );
 }

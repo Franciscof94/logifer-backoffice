@@ -1,46 +1,60 @@
 import { Link } from "react-router-dom";
 import { Button } from "../components/customs/Button";
+import { useState, useEffect } from "react";
 
 export const Home = () => {
+  // Estado para detectar si estamos en móvil
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Efecto para actualizar el estado cuando cambia el tamaño de la ventana
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div>
-      <div className="flex flex-col justify-center items-center">
-        <h1 className="text-center py-14 text-5xl font-semibold">
+      <div className="flex flex-col justify-center items-center p-4">
+        <h1 className={`text-center ${isMobile ? 'py-8 text-3xl' : 'py-14 text-5xl'} font-semibold`}>
           Bienvenido al backoffice de Logifer
         </h1>
-        <div>
-          <Link to="/nuevo-pedido">
+        <div className={`${isMobile ? 'w-full' : ''}`}>
+          <Link to="/nuevo-pedido" className={`${isMobile ? 'w-full block' : ''}`}>
             <Button
               color="blue"
               height="40px"
               legend="Crear nuevo pedido"
-              size="xl"
+              size={isMobile ? "lg" : "xl"}
               weight=""
-              width="250px"
+              width={isMobile ? "100%" : "250px"}
             />
           </Link>
         </div>
-        <div className="py-8">
-          <Link to="/nuevo-cliente">
+        <div className={`${isMobile ? 'py-4 w-full' : 'py-8'}`}>
+          <Link to="/nuevo-cliente" className={`${isMobile ? 'w-full block' : ''}`}>
             <Button
               color="blue"
               height="40px"
               legend="Crear nuevo cliente"
-              size="xl"
+              size={isMobile ? "lg" : "xl"}
               weight=""
-              width="250px"
+              width={isMobile ? "100%" : "250px"}
             />
           </Link>
         </div>
-        <div>
-          <Link to="/nuevo-producto">
+        <div className={`${isMobile ? 'w-full' : ''}`}>
+          <Link to="/nuevo-producto" className={`${isMobile ? 'w-full block' : ''}`}>
             <Button
               color="blue"
               height="40px"
               legend="Crear nuevo producto"
-              size="xl"
+              size={isMobile ? "lg" : "xl"}
               weight=""
-              width="250px"
+              width={isMobile ? "100%" : "250px"}
             />
           </Link>
         </div>

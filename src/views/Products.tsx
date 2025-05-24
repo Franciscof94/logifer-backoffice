@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { Title } from "../components/Title";
 import { TableFilters } from "../components/products/TableFilters";
 import { TableProducts } from "../components/products/TableProducts";
 import { IProduct } from "../interfaces";
@@ -58,11 +57,6 @@ export const Products = () => {
   return (
     <FormProvider {...methods}>
       <div>
-        <div className="flex justify-center items-center">
-          <div className="w-full max-w-[1300px] m-auto my-8">
-            <Title title="Productos" />
-          </div>
-        </div>
         <div className="flex justify-center items-center">
           <div className="w-full max-w-[1300px] m-auto">
             <TableFilters methods={methods} />

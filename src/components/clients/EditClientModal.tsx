@@ -47,7 +47,7 @@ export const EditClientModal: FC<Props> = ({
     resolver: yupResolver(ClientSchema),
   });
 
-  const { isLoadingButton } = useSelector((state: any) => state.uiData);
+  const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
 
   const {
     handleSubmit,

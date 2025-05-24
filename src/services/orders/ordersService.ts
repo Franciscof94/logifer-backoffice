@@ -36,8 +36,8 @@ const OrdersService = {
     await axiosInstance.post("/orders/mark-sent", order);
   },
   deleteProductOrder: async (
-    orderId: number | undefined,
-    productId: number | undefined
+    orderId: string | undefined,
+    productId: string | undefined
   ) => {
     await axiosInstance.delete(
       `/orders/delete-product-order/${orderId}/${productId}`
@@ -45,8 +45,8 @@ const OrdersService = {
   },
 
   editProductCount: async (order: {
-    orderId: number | undefined;
-    productId: number | undefined;
+    orderId: string | undefined;
+    productId: string | undefined;
     count: number | undefined | null;
   }) => {
     await axiosInstance.patch(

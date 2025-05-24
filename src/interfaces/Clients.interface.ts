@@ -12,7 +12,7 @@ export interface IClientOrder {
   orderDate: string;
   client: string;
   total: number;
-  discount: string;
+  discount: number;
   send: boolean;
   deliveryDate?: string;
   order: IOrderModal[];

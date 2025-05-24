@@ -5,5 +5,7 @@ interface Props {
 }
 
 export const Title: FC<Props> = ({ title }) => {
-  return <h1 className="text-[40px] text-black font-medium">{title}</h1>;
+  return (
+    <h1 className="font-semibold text-3xl md:text-4xl text-center">{title}</h1>
+  );
 };

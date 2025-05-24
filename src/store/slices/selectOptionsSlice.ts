@@ -1,10 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { ISelectOptions, IUnitTypeOptions } from "../../interfaces";
+import { IClientOption, IProductOption, IUnitTypeOption } from "../../interfaces/SelectOptions.interface";
 import { SelectOptionsService } from "../../services/SelectOptionsService";
+
 interface SelectOptionsState {
-  clientOptions: ISelectOptions[];
-  productsOptions: ISelectOptions[];
-  unitTypeOptions: IUnitTypeOptions[];
+  clientOptions: IClientOption[];
+  productsOptions: IProductOption[];
+  unitTypeOptions: IUnitTypeOption[];
 }
 
 const defaultState: SelectOptionsState = {
@@ -13,7 +14,7 @@ const defaultState: SelectOptionsState = {
   unitTypeOptions: [],
 };
 
-export const fetchClientsOptions = createAsyncThunk(
+export const fetchClientsOptions = createAsyncThunk<IClientOption[]>(
   "select/clients",
   async () => {
     const { data } = await SelectOptionsService.getClients();
@@ -21,7 +22,7 @@ export const fetchClientsOptions = createAsyncThunk(
   }
 );
 
-export const fetchProductsOptions = createAsyncThunk(
+export const fetchProductsOptions = createAsyncThunk<IProductOption[]>(
   "select/products",
   async () => {
     const { data } = await SelectOptionsService.getProducts();
@@ -29,7 +30,7 @@ export const fetchProductsOptions = createAsyncThunk(
   }
 );
 
-export const fetchUnitTypeOptions = createAsyncThunk(
+export const fetchUnitTypeOptions = createAsyncThunk<IUnitTypeOption[]>(
   "select/unittype",
   async () => {
     const { data } = await SelectOptionsService.getUnitType();

@@ -1,14 +1,18 @@
 import React, { FC, useEffect, useState } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import { TiDelete } from "react-icons/ti";
-import { BiSolidEdit } from "react-icons/bi";
+import { FiMinus, FiPlus } from "react-icons/fi";
 import { DeleteProductModal } from "./DeleteProductModal";
-import { EditProductModal } from "./EditProductModal";
 import { IOrderTable } from "../../interfaces";
 import { useFormContext } from "react-hook-form";
+import { Button } from "../customs/Button";
+import { DiscountSheet } from "./DiscountSheet";
+import { DataTable } from "../customs/DataTable";
+
 interface Props {
   data: IOrderTable[];
-  setNewOrders: (order: any) => void;
-  handleDelete: (id: number | undefined) => void;
+  setNewOrders: React.Dispatch<React.SetStateAction<IOrderTable[]>>;
+  handleDelete: (id: string | undefined) => void;
 }
 
 export const TableNewOrder: FC<Props> = ({
@@ -17,15 +21,21 @@ export const TableNewOrder: FC<Props> = ({
   handleDelete,
 }) => {
   const [modalDeleteIsOpen, setIsOpenModalDelete] = useState(false);
-  const [modalEditIsOpen, setIsOpenModalEdit] = useState(false);
+  const [discountSheetOpen, setDiscountSheetOpen] = useState(false);
   const [arrayProducts, setArrayProducts] = useState<IOrderTable[]>([]);
   const [rowSelected, setRowSelected] = useState<IOrderTable>();
-  const [updatedCount, setUpdatedCount] = useState<number | null | undefined>(
-    null
-  );
-  const columns = ["Producto", "Cantidad", "Dirección", "Acción"];
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  const { register, watch } = useFormContext();
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const { watch } = useFormContext();
   const discountValue = watch("discount");
 
   const openModalDelete = (row: IOrderTable) => {
@@ -37,168 +47,181 @@ export const TableNewOrder: FC<Props> = ({
     setIsOpenModalDelete(false);
   };
 
-  const openModalEdit = (row: IOrderTable) => {
-    setIsOpenModalEdit(true);
-    setRowSelected(row);
-  };
-
-  const closeModalEdit = () => {
-    setIsOpenModalEdit(false);
-  };
-
   useEffect(() => {
     setArrayProducts(data);
   }, [data]);
 
-  const handleEdit = () => {
+  const handleUpdateQuantity = (row: IOrderTable, increment: boolean) => {
     setNewOrders((prevState: IOrderTable[]) => {
-      return prevState.map((ctProduct) => {
-        if (ctProduct.id === rowSelected?.product.id) {
+      return prevState.map((product) => {
+        if (product.product.id === row.product.id) {
+          const currentCount = product.count || 0;
+          
+          const fractionalUnitIds = ["5", "6", "7"];
+          const isUnidadType = product.unitType?.id === "4";
+          const isFractionalUnit = product.unitType && fractionalUnitIds.includes(product.unitType.id);
+          
+          const incrementAmount = isUnidadType 
+            ? 0.25 
+            : isFractionalUnit && product.unitType
+              ? product.unitType.equivalencyValue 
+              : 1;
+
+          const minAmount = isUnidadType ? 0.25 : incrementAmount;
+
+          const newCount = increment 
+            ? currentCount + incrementAmount
+            : Math.max(minAmount, currentCount - incrementAmount);
+            
+          const roundedCount = Math.round(newCount * 100) / 100;
+          
           return {
-            ...ctProduct,
-            count: updatedCount,
+            ...product,
+            count: roundedCount,
           };
         }
-        return ctProduct;
+        return product;
       });
     });
-    closeModalEdit();
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (/^\d*\.?\d*$/.test(value) || value === "") {
-      setUpdatedCount(Number(value));
-    }
-  };
-
-  useEffect(() => {
-    setUpdatedCount(rowSelected?.count);
-  }, [rowSelected?.count, modalEditIsOpen]);
-
-  const total = arrayProducts?.reduce((acc: number, row: any) => {
+  const total = data?.reduce((acc: number, row: IOrderTable) => {
     const price = parseFloat(row.price.toString().replace("$", ""));
     if (row.count) {
       let subtotal = price * row.count;
       if (discountValue) {
-        subtotal *= 0.9; // Aplica un descuento del 10%
+        subtotal *= (100 - discountValue) / 100;
       }
       return acc + subtotal;
     }
     return acc;
   }, 0);
 
+  const totalConDescuento = discountValue
+    ? total * ((100 - discountValue) / 100)
+    : total;
+  const montoDescuento = discountValue ? total * (discountValue / 100) : 0;
+
+  const columns: ColumnDef<IOrderTable>[] = [
+    {
+      id: "product",
+      header: "Producto",
+      cell: ({ row }) => (
+        <div className="py-2">
+          <span className={`text-gray-700 ${isMobile ? "text-sm" : "text-base"}`}>
+            {row.original.product.name}
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: "quantity",
+      header: "Cantidad",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2 py-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUpdateQuantity(row.original, false);
+            }}
+            className="p-1.5 rounded-md hover:bg-[#3342B1]/5 text-[#3342B1] transition-colors"
+          >
+            <FiMinus size={16} />
+          </button>
+          <div
+            className={`text-gray-700 min-w-[40px] text-center ${
+              isMobile ? "text-sm" : "text-base"
+            }`}
+          >
+            {row.original.count}
+            {row.original.unit}
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUpdateQuantity(row.original, true);
+            }}
+            className="p-1.5 rounded-md hover:bg-[#3342B1]/5 text-[#3342B1] transition-colors"
+          >
+            <FiPlus size={16} />
+          </button>
+        </div>
+      ),
+    },
+    {
+      id: "action",
+      header: () => <div className="text-center">Acción</div>,
+      cell: ({ row }) => (
+        <div className="flex justify-center py-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              openModalDelete(row.original);
+            }}
+            className="p-1.5 rounded-md hover:bg-red-50 text-red-500 transition-colors"
+          >
+            <TiDelete size={isMobile ? 20 : 24} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
-    <div className="w-[815px]">
-      <div className="overflow-auto max-h-56 scrollbar">
-        <table className="w-full rounded-sm overflow-hidden">
-          <thead className="bg-grey-50 h-11">
-            <tr>
-              {columns.map((col, i) => {
-                const textAlignClass =
-                  i === columns.length - 1 ? "text-end" : "text-start";
-                return (
-                  <th
-                    key={col}
-                    className={`text-white font-semibold px-4 ${textAlignClass}`}
-                  >
-                    {col}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody className="bg-white">
-            {arrayProducts.length ? (
-              arrayProducts.map((row, rowIndex: number) => (
-                <React.Fragment key={rowIndex}>
-                  <tr key={rowIndex} className="">
-                    <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                      {row.product.name}
-                    </td>
-
-                    <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                      <div className="flex items-center">
-                        {" "}
-                        <div>
-                          {row.count}
-                          {row.unit}
-                        </div>
-                        <div
-                          className="px-2"
-                          onClick={() => {
-                            openModalEdit(row);
-                          }}
-                        >
-                          <BiSolidEdit className="cursor-pointer" />
-                        </div>
-                      </div>
-                    </td>
-
-                    <td key={rowIndex} className="text-grey-70 px-4 py-2">
-                      {row.address}
-                    </td>
-
-                    <td
-                      key={rowIndex}
-                      className="text-grey-70 px-7 flex justify-end py-2"
-                    >
-                      <TiDelete
-                        color="#F44336"
-                        className="cursor-pointer"
-                        size={24}
-                        onClick={() => {
-                          openModalDelete(row);
-                        }}
-                      />
-                    </td>
-                  </tr>
-                </React.Fragment>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="text-center font-normal text-xl text-black py-2"
-                >
-                  No hay productos
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-        <DeleteProductModal
-          closeModal={closeModalDelete}
-          modalIsOpen={modalDeleteIsOpen}
-          orderId={rowSelected?.id}
-          product={rowSelected?.product}
-          handleDelete={handleDelete}
-        />
-        <EditProductModal
-          closeModal={closeModalEdit}
-          modalIsOpen={modalEditIsOpen}
-          product={rowSelected?.product.name}
-          count={updatedCount}
-          handleEdit={handleEdit}
-          handleChange={handleChange}
-          title="producto"
-        />
-      </div>
-      <div className="w-full flex justify-end items-center font-bold">
-        <div className="px-6">
-          <label className="text-black px-2">Aplicar descuento (10%)</label>
-          <input {...register("discount")} type="checkbox" name="discount" />
+    <div className={`${isMobile ? "w-full" : "mx-auto w-[815px]"}`}>
+      <div className="">
+        <div className="overflow-auto max-h-[400px] scrollbar">
+          <DataTable
+            columns={columns}
+            data={arrayProducts}
+            noDataMessage="No hay productos agregados"
+            className="bg-white"
+          />
         </div>
-        <div
-          className="w-40 bg-grey-50 flex items-center px-3"
-          style={{ borderRadius: "0 0 4px 0" }}
-        >
-          <p className="text-xl text-white">Total:</p>
-          <small className=" text-lg text-white font-medium px-3">
-            ${total}
-          </small>
+
+        <div className="mt-4">
+          <div className="bg-[#3342B1] rounded-md p-4 text-white">
+            <div className="flex justify-between items-start">
+              <p className={`${isMobile ? "text-lg" : "text-xl"} font-medium text-white`}>
+                Total:
+              </p>
+              <div className="flex flex-col items-end">
+                {discountValue > 0 && (
+                  <>
+                    <span className={`${isMobile ? "text-sm" : "text-base"} text-white/80`}>
+                      ${total.toFixed(1)}
+                    </span>
+                    <div className="flex items-center text-emerald-300">
+                      <span className={`${isMobile ? "text-xs" : "text-sm"} mr-1`}>
+                        Descuento ({discountValue}%):
+                      </span>
+                      <span className={`${isMobile ? "text-xs" : "text-sm"}`}>
+                        -${montoDescuento.toFixed(1)}
+                      </span>
+                    </div>
+                  </>
+                )}
+                <span className={`${isMobile ? "text-xl" : "text-2xl"} font-semibold mt-1`}>
+                  ${totalConDescuento.toFixed(1)}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <DeleteProductModal
+        closeModal={closeModalDelete}
+        modalIsOpen={modalDeleteIsOpen}
+        orderId={rowSelected?.id}
+        product={rowSelected?.product}
+        handleDelete={handleDelete}
+      />
+      <DiscountSheet
+        open={discountSheetOpen}
+        setOpen={setDiscountSheetOpen}
+        height={30}
+      />
     </div>
   );
 };

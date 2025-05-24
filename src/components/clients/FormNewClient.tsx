@@ -8,12 +8,14 @@ import { ToastContainer, toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { setLoadingButton } from "../../store/slices/uiSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 interface Props {
   methods: any;
+  isMobile?: boolean;
 }
 
-export const FormNewClient: FC<Props> = ({ methods }) => {
+export const FormNewClient: FC<Props> = ({ methods, isMobile = false }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const {
@@ -21,7 +23,7 @@ export const FormNewClient: FC<Props> = ({ methods }) => {
     formState: { isValid },
   } = methods;
 
-  const { isLoadingButton } = useSelector((state: any) => state.uiData);
+  const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
 
   const onSubmit: SubmitHandler<IClient> = async (data) => {
     try {
@@ -39,41 +41,57 @@ export const FormNewClient: FC<Props> = ({ methods }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-      <div className="flex gap-x-16">
-        <div className="flex flex-col flex-1">
-          <label className="text-xl mb-1">Nombre y apellido</label>
+    <form onSubmit={handleSubmit(onSubmit)} className={`w-full ${isMobile ? 'px-4' : ''}`}>
+      <div className={`${isMobile ? 'flex flex-col gap-y-6' : 'flex gap-x-16'}`}>
+        <div className={`flex flex-col ${isMobile ? 'w-full' : 'flex-1'}`}>
+          <label className={`${isMobile ? 'text-lg' : 'text-xl'} mb-1`}>Nombre y apellido</label>
           <InputText
             placeholder="Nombre y apellido"
             type="text"
             name="nameAndLastname"
+            className="w-full"
           />
         </div>
-        <div className="flex flex-col flex-1">
-          <label className="text-xl mb-1">Email</label>
-          <InputText placeholder="Email" type="text" name="email" />
+        <div className={`flex flex-col ${isMobile ? 'w-full' : 'flex-1'}`}>
+          <label className={`${isMobile ? 'text-lg' : 'text-xl'} mb-1`}>Email</label>
+          <InputText 
+            placeholder="Email" 
+            type="text" 
+            name="email" 
+            className="w-full"
+          />
         </div>
       </div>
-      <div className="flex gap-x-16 mt-8">
-        <div className="flex flex-col flex-1">
-          <label className="text-xl mb-1">Dirección</label>
-          <InputText placeholder="Dirección" type="text" name="address" />
+      <div className={`${isMobile ? 'flex flex-col gap-y-6 mt-6' : 'flex gap-x-16 mt-8'}`}>
+        <div className={`flex flex-col ${isMobile ? 'w-full' : 'flex-1'}`}>
+          <label className={`${isMobile ? 'text-lg' : 'text-xl'} mb-1`}>Dirección</label>
+          <InputText 
+            placeholder="Dirección" 
+            type="text" 
+            name="address" 
+            className="w-full"
+          />
         </div>
-        <div className="flex flex-col flex-1">
-          <label className="text-xl mb-1">Teléfono <span className="text-sm text-[#757575]">(Ingresar número sin 0 y sin 15)</span></label>
-          <InputText placeholder="Teléfono" type="text" name="phone" />
+        <div className={`flex flex-col ${isMobile ? 'w-full' : 'flex-1'}`}>
+          <label className={`${isMobile ? 'text-lg' : 'text-xl'} mb-1`}>Teléfono <span className="text-sm text-[#757575]">(Ingresar número sin 0 y sin 15)</span></label>
+          <InputText 
+            placeholder="Teléfono" 
+            type="text" 
+            name="phone" 
+            className="w-full"
+          />
         </div>
       </div>
-      <div className="flex justify-end mt-10">
+      <div className={`flex ${isMobile ? 'justify-center mt-6' : 'justify-end mt-10'}`}>
         <Button
           color={isValid ? "blue" : "grey-50"}
           height="36px"
           legend="Guardar"
-          size="xl"
+          size={isMobile ? "lg" : "xl"}
           isLoading={isLoadingButton}
           disabled={isLoadingButton || !isValid}
           weight="normal"
-          width="140px"
+          width={isMobile ? "100%" : "140px"}
         />
       </div>
       <ToastContainer />

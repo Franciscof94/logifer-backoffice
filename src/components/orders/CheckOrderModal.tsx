@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, useState } from "react";
+import { ChangeEvent, FC, useState, useEffect } from "react";
 import Modal from "react-modal";
 import { FaTimes } from "react-icons/fa";
 import { Button } from "../customs/Button";
@@ -9,6 +9,7 @@ import OrdersService from "../../services/orders/ordersService";
 import { InputText } from "../customs/InputText";
 import { setLoadingButton } from "../../store/slices/uiSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 interface Props {
   modalIsOpen: boolean;
@@ -17,23 +18,6 @@ interface Props {
   order: Data | undefined;
 }
 
-const customStyles = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    width: 530,
-    height: 280,
-    padding: 0,
-    transform: "translate(-50%, -50%)",
-  },
-  overlay: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-};
-
 export const CheckOrderModal: FC<Props> = ({
   modalIsOpen,
   closeModal,
@@ -41,8 +25,37 @@ export const CheckOrderModal: FC<Props> = ({
   order,
 }) => {
   const dispatch = useDispatch();
-  const { isLoadingButton } = useSelector((state: any) => state.uiData);
+  const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
   const [deliveryDate, setDeliveryDate] = useState("");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const customStyles = {
+    content: {
+      top: "50%",
+      left: "50%",
+      right: isMobile ? "5%" : "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      width: isMobile ? "90%" : 530,
+      height: isMobile ? "auto" : 280,
+      maxHeight: isMobile ? "90vh" : "auto",
+      padding: 0,
+      transform: "translate(-50%, -50%)",
+    },
+    overlay: {
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
+  };
 
   return (
     <Modal
@@ -53,21 +66,21 @@ export const CheckOrderModal: FC<Props> = ({
     >
       <div className="flex flex-col h-full justify-between">
         <div className="">
-          <div className="flex justify-between items-center px-3 py-3">
-            <p className="text-2xl font-medium text-black">Actualizar pedido</p>
+          <div className={`flex justify-between items-center ${isMobile ? 'px-2 py-2' : 'px-3 py-3'}`}>
+            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-medium text-black`}>Actualizar pedido</p>
             <button onClick={closeModal}>
-              <FaTimes size={28} color="#B8B8B8" />
+              <FaTimes size={isMobile ? 24 : 28} color="#B8B8B8" />
             </button>
           </div>
 
           <hr className=" border-grey" />
         </div>
 
-        <div className="my-4 text-center">
-          <p className="font-lg font-xl text-black">
+        <div className={`${isMobile ? 'my-3' : 'my-4'} text-center`}>
+          <p className={`${isMobile ? 'text-base' : 'font-lg font-xl'} text-black`}>
             ¿Estás seguro de que deseas marcar este pedido como enviado?
           </p>
-          <div className="px-12">
+          <div className={`${isMobile ? 'px-4' : 'px-12'}`}>
             <p className="font-medium text-black text-base my-3 text-start">
               Fecha de envio
             </p>
@@ -85,12 +98,12 @@ export const CheckOrderModal: FC<Props> = ({
 
         <div className="">
           <hr className=" border-grey" />
-          <div className="flex justify-end gap-x-2.5 px-3 my-3">
+          <div className={`flex justify-end gap-x-2.5 ${isMobile ? 'px-2 my-2' : 'px-3 my-3'}`}>
             <Button
               legend="Cancelar"
-              size="xl"
-              height="36px"
-              width="130px"
+              size={isMobile ? "lg" : "xl"}
+              height={isMobile ? "32px" : "36px"}
+              width={isMobile ? "100px" : "130px"}
               color="grey-50"
               weight="font-light"
               onClick={() => {
@@ -100,11 +113,11 @@ export const CheckOrderModal: FC<Props> = ({
             />
             <Button
               legend="Aceptar"
-              size="xl"
-              height="36px"
+              size={isMobile ? "lg" : "xl"}
+              height={isMobile ? "32px" : "36px"}
               isLoading={isLoadingButton}
               disabled={isLoadingButton || !deliveryDate}
-              width="130px"
+              width={isMobile ? "100px" : "130px"}
               color={!deliveryDate ? "grey-50" : "blue"}
               weight="font-light"
               onClick={async () => {

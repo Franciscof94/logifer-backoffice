@@ -1,111 +1,106 @@
-import { FC } from "react";
-import Modal from "react-modal";
-import { FaTimes } from "react-icons/fa";
-import { Button } from "../customs/Button";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/store";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import { CustomSheet } from "../customs/CustomSheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../ui/dialog';
 
 interface Props {
   modalIsOpen: boolean;
   closeModal: () => void;
-  orderId: number | undefined;
-  product:
-    | {
-        id: number;
-        name: string | undefined;
-      }
-    | undefined;
-  handleDelete: (
-    orderId?: number | undefined,
-    productId?: number | undefined
-  ) => void;
+  product: {
+    id: string;
+    name: string;
+  } | undefined;
+  orderId?: string;
+  handleDelete: (id: string | undefined) => void;
 }
 
-const customStyles = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    width: 486,
-    height: 210,
-    padding: 0,
-    transform: "translate(-50%, -50%)",
-  },
-  overlay: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-};
-
-export const DeleteProductModal: FC<Props> = ({
+export const DeleteProductModal = ({
   modalIsOpen,
   closeModal,
   product,
   orderId,
   handleDelete,
-}) => {
-  const { isLoadingButton } = useSelector((state: any) => state.uiData);
+}: Props) => {
+  const dispatch = useDispatch();
+  const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  console.log(product);
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleDeleteProduct = async () => {
+    dispatch(setLoadingButton(true));
+    await handleDelete(orderId);
+    dispatch(setLoadingButton(false));
+    closeModal();
+  };
+
+  const content = (
+    <>
+      <div className="py-4">
+        <p className="text-gray-500">
+          ¿Estás seguro que deseas eliminar el producto{" "}
+          <span className="font-medium text-gray-900">{product?.name}</span>?
+        </p>
+      </div>
+
+      <div className="flex justify-end gap-x-3 w-full">
+        <button
+          onClick={closeModal}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-[6px] hover:bg-gray-50"
+        >
+          Cancelar
+        </button>
+        <button
+          onClick={handleDeleteProduct}
+          disabled={isLoadingButton}
+          className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-[6px] hover:bg-red-700 disabled:opacity-50"
+        >
+          {isLoadingButton ? "Eliminando..." : "Eliminar"}
+        </button>
+      </div>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <CustomSheet
+        open={modalIsOpen}
+        onOpenChange={(open) => !open && closeModal()}
+        title="Eliminar producto"
+      >
+        {content}
+      </CustomSheet>
+    );
+  }
 
   return (
-    <Modal
-      isOpen={modalIsOpen}
-      onRequestClose={closeModal}
-      style={customStyles}
-      contentLabel="Example Modal"
-    >
-      <div className="flex flex-col h-full justify-between">
-        <div className="">
-          <div className="flex justify-between items-center px-3 py-3">
-            <p className="text-2xl font-medium text-black">Eliminar producto</p>
-            <button onClick={closeModal}>
-              <FaTimes size={28} color="#B8B8B8" />
-            </button>
-          </div>
+    <Dialog open={modalIsOpen} onOpenChange={(open) => !open && closeModal()}>
+      <DialogContent className="sm:max-w-[425px] bg-white" style={{
+        borderRadius: 6
+      }}>
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-xl font-medium text-gray-900">
+            Eliminar producto
+          </DialogTitle>
+        </DialogHeader>
 
-          <hr className=" border-grey" />
-        </div>
-
-        <div className="my-4 text-center">
-          <p className="font-light text-black">
-            ¿Estás seguro de que deseas eliminar este producto
-            <span className="font-medium"> {product?.name}</span>?
-          </p>
-        </div>
-
-        <div className="">
-          <hr className=" border-grey" />
-          <div className="flex justify-end gap-x-2.5 px-3 my-3">
-            <Button
-              legend="Cancelar"
-              size="xl"
-              height="36px"
-              width="130px"
-              color="grey-50"
-              weight="font-light"
-              onClick={closeModal}
-            />
-            <Button
-              legend="Eliminar"
-              size="xl"
-              disabled={isLoadingButton}
-              isLoading={isLoadingButton}
-              height="36px"
-              width="130px"
-              color="blue"
-              weight="font-light"
-              onClick={async () => {
-                handleDelete(orderId, product?.id);
-                toast.success("Producto eliminado exitosamente");
-                closeModal();
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    </Modal>
+        {content}
+      </DialogContent>
+    </Dialog>
   );
 };

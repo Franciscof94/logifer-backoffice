@@ -1,6 +1,6 @@
 import { FC } from "react";
 import AsyncSelect from "react-select/async";
-import Select from "react-select";
+import Select, { StylesConfig, SingleValue } from "react-select";
 import { Controller, useFormContext } from "react-hook-form";
 import { ErrorMessage } from "@hookform/error-message";
 
@@ -10,7 +10,7 @@ interface IOption {
 }
 
 interface Props {
-  loadOptions?: () => Promise<any>;
+  loadOptions?: () => Promise<IOption[]>;
   options: IOption[];
   placeholder: string;
   name: string;
@@ -41,19 +41,22 @@ export const CustomSelect: FC<Props> = ({
     formState: { errors },
   } = methods;
   const optionSelected = watch(name);
-  const customStyles = {
-    control: (provided: any) => ({
+
+  const customStyles: StylesConfig<IOption, false> = {
+    control: (provided) => ({
       ...provided,
       height: "44px",
       backgroundColor: "white",
       border: "none",
       borderRadius: "6px",
-      boxShadow:
-        "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
       "&:hover": {
         borderColor: "blue",
       },
     }),
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 9999
+    })
   };
 
   return (
@@ -66,16 +69,15 @@ export const CustomSelect: FC<Props> = ({
             {...register(name ?? "")}
             {...field}
             {...props}
-            onChange={(e: any) => {
-              field.onChange(e.value);
+            onChange={(option: SingleValue<IOption>) => {
+              field.onChange(option?.value);
             }}
-            value={{
-              value: optionSelected,
-              label:
-                options.find((option) => option.value === optionSelected)
-                  ?.label ?? "Seleccionar",
-            }}
+            value={optionSelected ? options.find(option => option.value === optionSelected) : null}
             styles={customStyles}
+            isSearchable={true}
+            noOptionsMessage={() => "No hay opciones"}
+            placeholder={props.placeholder}
+            loadingMessage={() => "Cargando..."}
           />
         )}
       />
