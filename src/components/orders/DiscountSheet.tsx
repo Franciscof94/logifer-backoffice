@@ -1,13 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '../ui/dialog';
-import { useFormContext } from 'react-hook-form';
-import { CustomSheet } from '../customs/CustomSheet';
+import React, { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { useFormContext } from "react-hook-form";
+import { CustomSheet } from "../customs/CustomSheet";
 
 interface Props {
   open: boolean;
@@ -16,8 +10,8 @@ interface Props {
 }
 
 export const DiscountSheet = ({ open, setOpen }: Props) => {
-  const { register, setValue, watch } = useFormContext();
-  const currentDiscount = watch('discount') || 0;
+  const { setValue, watch } = useFormContext();
+  const currentDiscount = watch("discount") || 0;
   const [discount, setDiscount] = useState<string>(currentDiscount.toString());
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -26,31 +20,27 @@ export const DiscountSheet = ({ open, setOpen }: Props) => {
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleApply = () => {
-    // Si está vacío o no es un número válido, usar 0
-    const numericValue = discount === '' ? 0 : parseFloat(discount);
-    
-    // Asegurar que el valor esté entre 0 y 100
+    const numericValue = discount === "" ? 0 : parseFloat(discount);
+
     const validDiscount = Math.min(Math.max(0, numericValue), 100);
-    setValue('discount', validDiscount);
+    setValue("discount", validDiscount);
     setOpen(false);
   };
 
   const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    
-    // Permitir campo vacío
-    if (value === '') {
-      setDiscount('');
+
+    if (value === "") {
+      setDiscount("");
       return;
     }
 
     const numericValue = parseFloat(value);
-    // Validar que sea un número y esté entre 0 y 100
     if (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 100) {
       setDiscount(value);
     }
@@ -60,7 +50,10 @@ export const DiscountSheet = ({ open, setOpen }: Props) => {
     <>
       <div className="py">
         <div className="space-y-2">
-          <label htmlFor="discount" className="text-sm font-medium text-gray-700 block">
+          <label
+            htmlFor="discount"
+            className="text-sm font-medium text-gray-700 block"
+          >
             Porcentaje de descuento
           </label>
           <input
@@ -79,16 +72,24 @@ export const DiscountSheet = ({ open, setOpen }: Props) => {
         </div>
       </div>
 
-      <div className="flex justify-end gap-x-3 w-full mt-4">
+      <div
+        className={`${
+          isMobile ? "flex flex-col" : "flex justify-end"
+        } gap-3 w-full mt-4`}
+      >
         <button
           onClick={() => setOpen(false)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-[6px] hover:bg-gray-50"
+          className={`px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-[6px] hover:bg-gray-50 ${
+            isMobile ? "order-2" : ""
+          }`}
         >
           Cancelar
         </button>
         <button
           onClick={handleApply}
-          className="px-4 py-2 text-sm font-medium text-white bg-[#3342B1] rounded-[6px] hover:bg-[#2A3690]"
+          className={`px-4 py-2 text-sm font-medium text-white bg-[#3342B1] rounded-[6px] hover:bg-[#2A3690] ${
+            isMobile ? "order-1" : ""
+          }`}
         >
           Aplicar
         </button>
@@ -111,14 +112,19 @@ export const DiscountSheet = ({ open, setOpen }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && setOpen(false)}>
-      <DialogContent className="sm:max-w-[425px] bg-white" style={{
-        borderRadius: 6
-      }}>
+      <DialogContent
+        className="sm:max-w-[425px] bg-white"
+        style={{
+          borderRadius: 6,
+        }}
+      >
         <DialogHeader className="pb-2">
           <DialogTitle className="text-xl font-medium text-gray-900">
             Aplicar descuento
           </DialogTitle>
-          <div className="text-sm text-gray-500">Descuento para todos los productos</div>
+          <div className="text-sm text-gray-500">
+            Descuento para todos los productos
+          </div>
         </DialogHeader>
 
         {content}

@@ -9,6 +9,7 @@ import { IoMdPerson } from "react-icons/io";
 import { FaFileCirclePlus, FaFileLines } from "react-icons/fa6";
 import { BsFillPatchPlusFill } from "react-icons/bs";
 import { SiBuffer } from "react-icons/si";
+import { RootState } from "@/store/store";
 
 const links = [
   {
@@ -54,10 +55,8 @@ export const Navbar = () => {
   const navbarRef = useRef<any>(null);
   const dispatch = useDispatch();
   
-  // Estado para detectar si estamos en móvil
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Efecto para actualizar el estado cuando cambia el tamaño de la ventana
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -81,7 +80,6 @@ export const Navbar = () => {
     };
   }, []);
 
-  // Si estamos en móvil y el menú no está abierto, no renderizamos nada
   if (isMobile && !isOpen) {
     return null;
   }

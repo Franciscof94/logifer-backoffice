@@ -3,10 +3,8 @@ import { Button } from "../components/customs/Button";
 import { useState, useEffect } from "react";
 
 export const Home = () => {
-  // Estado para detectar si estamos en móvil
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Efecto para actualizar el estado cuando cambia el tamaño de la ventana
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -16,6 +14,8 @@ export const Home = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+
+  console.log('ENTRRRRRO')
   return (
     <div>
       <div className="flex flex-col justify-center items-center p-4">

@@ -1,23 +1,37 @@
-import { FC } from "react";
-import { SubmitHandler } from "react-hook-form";
+import { FC, useState, useEffect } from "react";
+import { SubmitHandler, UseFormReturn } from "react-hook-form";
 import { InputText } from "../customs/InputText";
-import { Button } from "../customs/Button";
 import { IProduct, IProductsFilter } from "../../interfaces";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setFiltersProducts } from "../../store/slices/filtersSlice";
+import { RootState } from "../../store/store";
+
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
 
 interface Props {
-  methods: any;
+  methods: UseFormReturn<IProduct>;
 }
 
 export const TableFilters: FC<Props> = ({ methods }) => {
   const dispatch = useDispatch();
   const { handleSubmit, reset } = methods;
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const onSubmit: SubmitHandler<IProduct> = (data) => {
     const newObj: IProductsFilter = {
-      product: data.product,
-      price: String(data.price),
+      product: data.productName || "",
+      price: data.price ? String(data.price) : "",
     };
     dispatch(setFiltersProducts(newObj));
   };
@@ -29,47 +43,56 @@ export const TableFilters: FC<Props> = ({ methods }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="bg-grey-50 rounded">
-        <div className="flex justify-between py-4 px-3">
-          <div className="flex w-full gap-x-8 pr-4">
-            <div className="w-1/2">
-              <InputText
-                placeholder="Buscar por producto"
-                type="text"
-                className=""
-                name="product"
-              />
+      <Card className="border border-gray-200 bg-gray-200 rounded-md">
+        <CardContent className="p-6">
+          <div className={`${isMobile ? 'flex flex-col space-y-6' : 'grid grid-cols-3 gap-6'}`}>
+            <div className="space-y-2">
+              <label htmlFor="productName" className="block text-sm font-medium text-gray-700 mb-1">Producto</label>
+              <div className="relative rounded-md overflow-hidden">
+                <InputText
+                  placeholder="Buscar por producto"
+                  type="text"
+                  width="w-full"
+                  name="productName"
+                  className="border-0 focus:ring-2 focus:ring-blue-500 h-10"
+                />
+              </div>
             </div>
-            <div className="w-1/2">
-              <InputText
-                placeholder="Buscar por precio"
-                type="text"
-                name="price"
-                className=""
-              />
+            
+            <div className="space-y-2">
+              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+              <div className="relative rounded-md overflow-hidden">
+                <InputText
+                  placeholder="Buscar por precio"
+                  type="text"
+                  width="w-full"
+                  name="price"
+                  className="border-0 focus:ring-2 focus:ring-blue-500 h-10"
+                />
+              </div>
+            </div>
+            
+            <div className={`${isMobile ? 'flex justify-between gap-4' : 'flex items-end gap-4'}`}>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 h-10 px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-100 rounded-md font-medium"
+                onClick={handleResetFilter}
+                disabled={isLoadingButton}
+              >
+                Limpiar filtros
+              </Button>
+              <Button 
+                type="submit" 
+                className="flex-1 h-10 px-4 py-2 bg-blue text-white hover:bg-blue-700 rounded-md font-medium"
+                disabled={isLoadingButton}
+              >
+                Buscar
+              </Button>
             </div>
           </div>
-          <div className="flex gap-x-4">
-            <Button
-              color="grey-50"
-              height="45px"
-              legend="Limpiar filtros"
-              size="xl"
-              weight="normal"
-              width="140px"
-              onClick={handleResetFilter}
-            />
-            <Button
-              color="blue"
-              height="45px"
-              legend="Buscar"
-              size="xl"
-              weight="normal"
-              width="140px"
-            />
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </form>
   );
 };

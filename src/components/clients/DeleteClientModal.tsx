@@ -4,6 +4,7 @@ import { FaTimes } from "react-icons/fa";
 import { Button } from "../customs/Button";
 import { IClient } from "../../interfaces";
 import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 interface Props {
   modalIsOpen: boolean;

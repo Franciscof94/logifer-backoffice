@@ -16,6 +16,7 @@ import { useDispatch } from "react-redux";
 import { setLoadingOrdersTable } from "../../store/slices/ordersSlice";
 import ReportsService from "../../services/reports/reportsService";
 import ClipLoader from "react-spinners/ClipLoader";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 ChartJS.register(
   CategoryScale,
@@ -34,9 +35,16 @@ const override: CSSProperties = {
 
 const options = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
       position: "top" as const,
+      labels: {
+        boxWidth: 12,
+        font: {
+          size: 11
+        }
+      }
     },
     title: {
       display: true,
@@ -49,6 +57,16 @@ export const ProductsReports = () => {
   const methods = useForm<IProductsReportFilter>();
   const [reports, setReports] = useState<number[]>();
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const { watch } = methods;
 
@@ -56,7 +74,20 @@ export const ProductsReports = () => {
   const yearValue = watch("yearReport");
   const monthValue = watch("monthReport");
 
-  const labels = [
+  const labels = isMobile ? [
+    "Ene",
+    "Feb",
+    "Mar",
+    "Abr",
+    "May",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dic",
+  ] : [
     "Enero",
     "Febrero",
     "Marzo",
@@ -89,7 +120,7 @@ export const ProductsReports = () => {
         dispatch(setLoadingOrdersTable(false));
         setReports(reports);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.log(error);
     } finally {
       setLoading(false);
@@ -129,11 +160,41 @@ export const ProductsReports = () => {
         ) : (
           <>
             {productValue && yearValue && monthValue ? (
-              <div className="max-h-[480px] flex justify-center">
-                <Bar options={options} data={data} />
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Reporte de Ventas por Producto</CardTitle>
+                </CardHeader>
+                <CardContent className="p-2 sm:p-6">
+                  <div className={`${isMobile ? 'h-[350px]' : 'h-[480px]'} w-full`}>
+                    <Bar 
+                      options={{
+                        ...options,
+                        scales: {
+                          x: {
+                            ticks: {
+                              font: {
+                                size: isMobile ? 9 : 12
+                              },
+                              maxRotation: isMobile ? 45 : 0,
+                              minRotation: isMobile ? 45 : 0
+                            }
+                          },
+                          y: {
+                            ticks: {
+                              font: {
+                                size: isMobile ? 10 : 12
+                              }
+                            }
+                          }
+                        }
+                      }} 
+                      data={data} 
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
-              <div className="flex justify-center my-12 font-medium text-2xl text-danger">
+              <div className="flex justify-center my-12 font-medium text-xl md:text-2xl text-danger text-center px-4">
                 Seleccione un producto, un año y un mes para ver los reportes
               </div>
             )}

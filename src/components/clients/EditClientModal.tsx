@@ -9,9 +9,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { ClientSchema } from "../../validationSchemas";
 import ClientsService from "../../services/clients/clientsServices";
 import { toast } from "react-toastify";
-import { setLoadingButton } from "../../store/slices/uiSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { AxiosError } from "axios";
+import { RootState } from "../../store/store";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import axios from "axios";
 
 interface Props {
   modalIsOpen: boolean;
@@ -65,14 +66,20 @@ export const EditClientModal: FC<Props> = ({
   const onSubmit: SubmitHandler<IClient> = async (data) => {
     try {
       dispatch(setLoadingButton(true));
-      await ClientsService.patchClient(client?.id, data);
+      await ClientsService.putClient(client?.id, data);
       dispatch(setLoadingButton(false));
       toast.success("Cliente editado exitosamente!");
       refreshTable();
       closeModal();
-    } catch (error: Error | AxiosError | any) {
+    } catch (error: unknown) {
       dispatch(setLoadingButton(false));
-      toast.error(error.message);
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || error.message);
+      } else if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error('Error al editar el cliente');
+      }
     }
   };
 
@@ -99,12 +106,9 @@ export const EditClientModal: FC<Props> = ({
               <hr className=" border-grey" />
             </div>
 
-            <FormEditClient
-              methods={methods}
-              client={client}
-              refreshTable={refreshTable}
-              modalIsOpen={modalIsOpen}
-            />
+            <FormProvider {...methods}>
+              <FormEditClient />
+            </FormProvider>
 
             <div className="flex flex-col ">
               <div>

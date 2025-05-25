@@ -8,7 +8,7 @@ export const clientsEndpoints = {
     return {
       ...response.data.data,
       data: (response.data.data.data || []).map(client => ({
-        value: client.id || '',  // Aseguramos que siempre haya un valor
+        value: client.id || '',
         label: client.nameAndLastname,
         address: client.address,
         email: client.email,

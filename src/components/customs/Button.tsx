@@ -1,7 +1,7 @@
 import { FC } from "react";
 
 interface Props {
-  legend: string;
+  legend?: string;
   width?: string;
   size: string;
   color: 'rojo' | 'verde' | 'blue' | 'grey-50';
@@ -12,6 +12,7 @@ interface Props {
   disabled?: boolean;
   className?: string;
   isLoading?: boolean;
+  children?: React.ReactNode;
 }
 
 export const Button: FC<Props> = ({
@@ -23,9 +24,9 @@ export const Button: FC<Props> = ({
   className,
   isLoading,
   disabled,
+  children,
   ...props
 }) => {
-  // Mapeo correcto de colores a clases de Tailwind
   const getColorClasses = () => {
     switch (color) {
       case 'rojo':
@@ -41,11 +42,10 @@ export const Button: FC<Props> = ({
     }
   };
 
-  // Mapeo correcto de tamaños de texto
   const getTextSize = (size?: string | undefined) => {
     switch (size) {
       case 'xs': return 'text-xs';
-      case 'sm': return 'text-sm'; // Standardize to text-sm
+      case 'sm': return 'text-sm';
       case 'base': return 'text-base';
       case 'lg': return 'text-lg';
       case 'xl': return 'text-xl';
@@ -54,7 +54,6 @@ export const Button: FC<Props> = ({
     }
   };
 
-  // Mapeo correcto de pesos de fuente
   const getFontWeight = () => {
     switch (weight) {
       case 'normal': return 'font-normal';
@@ -99,7 +98,7 @@ export const Button: FC<Props> = ({
           </svg>
         )}
         {!isLoading ? (
-          <span>{legend}</span>
+          children ? children : <span>{legend}</span>
         ) : (
           <span className="text-lg">Cargando..</span>
         )}

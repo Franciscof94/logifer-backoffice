@@ -1,23 +1,19 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { setLoadingButton } from "../../store/slices/uiSlice";
 import { CustomSheet } from "../customs/CustomSheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '../ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 
 interface Props {
   modalIsOpen: boolean;
   closeModal: () => void;
-  product: {
-    id: string;
-    name: string;
-  } | undefined;
+  product:
+    | {
+        id: string;
+        name: string;
+      }
+    | undefined;
   orderId?: string;
   handleDelete: (id: string | undefined) => void;
 }
@@ -38,8 +34,8 @@ export const DeleteProductModal = ({
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleDeleteProduct = async () => {
@@ -90,9 +86,12 @@ export const DeleteProductModal = ({
 
   return (
     <Dialog open={modalIsOpen} onOpenChange={(open) => !open && closeModal()}>
-      <DialogContent className="sm:max-w-[425px] bg-white" style={{
-        borderRadius: 6
-      }}>
+      <DialogContent
+        className="sm:max-w-[425px] bg-white"
+        style={{
+          borderRadius: 6,
+        }}
+      >
         <DialogHeader className="pb-2">
           <DialogTitle className="text-xl font-medium text-gray-900">
             Eliminar producto

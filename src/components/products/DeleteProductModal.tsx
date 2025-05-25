@@ -56,7 +56,7 @@ export const DeleteProductModal: FC<Props> = ({
         <div className="my-2 text-center">
           <p className="font-light text-black">
             ¿Estás seguro de que deseas eliminar este producto
-            <span className="font-medium"> {product?.product}</span>?
+            <span className="font-medium"> {product?.productName}</span>?
           </p>
         </div>
 

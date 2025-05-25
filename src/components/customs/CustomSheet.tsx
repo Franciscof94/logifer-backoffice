@@ -27,7 +27,7 @@ export const CustomSheet: React.FC<Props> = ({
 }) => {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[40vh] max-h-[400px] overflow-y-auto">
+      <SheetContent side="bottom" className="h-[40vh] max-h-[400px] overflow-y-auto p-4">
         {(title || description) && (
           <SheetHeader>
             {title && <SheetTitle className="text-lg font-medium text-gray-900">{title}</SheetTitle>}

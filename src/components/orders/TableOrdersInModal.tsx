@@ -1,16 +1,16 @@
-import { ChangeEvent, FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { IClientOrder, IOrderModal, Order } from "../../interfaces";
 import { TiDelete } from "react-icons/ti";
 import { DeleteProductModal } from "./DeleteProductModal";
-import { EditProductModal } from "./EditProductModal";
 import OrdersService from "../../services/orders/ordersService";
-import { BiSolidEdit } from "react-icons/bi";
 import { toast } from "react-toastify";
 import { setLoadingButton } from "../../store/slices/uiSlice";
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "../customs/DataTable";
+import { FiMinus, FiPlus } from "react-icons/fi";
+import { formatArgentinePrice } from "../../utils/formatters";
 
 interface Props {
   orders: IOrderModal[] | undefined;
@@ -27,12 +27,11 @@ export const TableOrdersInModal: FC<Props> = ({
 }) => {
   const dispatch = useDispatch();
 
-  const [updatedCount, setUpdatedCount] = useState<number | undefined>(undefined);
-  const [modalEditIsOpen, setModalEditIsOpen] = useState(false);
   const [ordersTable, setOrdersTable] = useState<IOrderModal[] | undefined>([]);
   const [rowSelected, setRowSelected] = useState<Order>();
   const [modalDeleteIsOpen, setModalDeleteIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [loadingRows, setLoadingRows] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     const handleResize = () => {
@@ -83,42 +82,60 @@ export const TableOrdersInModal: FC<Props> = ({
     }
   };
 
-  const openModalEdit = (row: Order) => {
-    setRowSelected(row);
-    setModalEditIsOpen(true);
-  };
 
-  const closeModalEdit = () => {
-    setModalEditIsOpen(false);
-  };
-
-  const handleEdit = async () => {
+  const handleUpdateQuantity = async (row: Order, increment: boolean) => {
+    if (loadingRows[row.id || '']) {
+      return;
+    }
+    
     try {
+      setLoadingRows(prev => ({ ...prev, [row.id || '']: true }));
+      
+      const currentCount = row.count || 0;
+      
+      const fractionalUnitIds = ["5", "6", "7"];
+      const unitTypeId = typeof row.product.unitType === 'object' && row.product.unitType !== null
+        ? (row.product.unitType as {id: string}).id
+        : typeof row.product.unitType === 'string'
+          ? row.product.unitType
+          : '';
+          
+      const isUnidadType = unitTypeId === "4";
+      const isFractionalUnit = unitTypeId && fractionalUnitIds.includes(unitTypeId);
+      
+      const shouldUseSmallIncrements = isUnidadType || isFractionalUnit;
+      
+      const incrementAmount = shouldUseSmallIncrements ? 0.25 : 1;
+      
+      const minAmount = shouldUseSmallIncrements ? 0.25 : 1;
+      
+      const newCount = increment 
+        ? currentCount + incrementAmount
+        : Math.max(minAmount, currentCount - incrementAmount);
+        
+      const roundedCount = Math.round(newCount * 100) / 100;
       setOrdersTable((prevState: IOrderModal[] | undefined) => {
-        return prevState?.map((ctProduct) => {
-          if (ctProduct.id === rowSelected?.id) {
+        return prevState?.map((item) => {
+          if (item.id === row.id) {
             return {
-              ...ctProduct,
-              count: updatedCount || 0,
+              ...item,
+              count: roundedCount,
             };
           }
-          return ctProduct;
+          return item;
         });
       });
 
-      dispatch(setLoadingButton(true));
+
       await OrdersService.editProductCount({
-        orderId: rowSelected?.id,
-        productId: rowSelected?.product.id,
-        count: updatedCount,
+        orderId: row.id,
+        productId: row.product.id,
+        count: roundedCount,
       });
 
-      refreshTable();
-      dispatch(setLoadingButton(false));
-      toast.success("Cantidad editada correctamente");
-      closeModalEdit();
+      await refreshTable();
+      toast.success("Cantidad actualizada");
     } catch (error: unknown) {
-      dispatch(setLoadingButton(false));
       if (
         axios.isAxiosError(error) &&
         error.response &&
@@ -126,22 +143,13 @@ export const TableOrdersInModal: FC<Props> = ({
       ) {
         toast.error(error.response.data.message);
       } else {
-        toast.error("Ocurrió un error al procesar la solicitud");
+        toast.error("Ocurrió un error al actualizar la cantidad");
       }
+      await refreshTable();
+    } finally {
+      setLoadingRows(prev => ({ ...prev, [row.id || '']: false }));
     }
   };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-
-    if (/^\d*\.?\d*$/.test(value) || value === "") {
-      setUpdatedCount(value === "" ? undefined : Number(value));
-    }
-  };
-
-  useEffect(() => {
-    setUpdatedCount(rowSelected?.count);
-  }, [rowSelected?.count, modalEditIsOpen]);
 
   const columns: ColumnDef<IOrderModal>[] = [
     {
@@ -154,21 +162,49 @@ export const TableOrdersInModal: FC<Props> = ({
       ),
     },
     {
+      id: "unitType",
+      header: "Tipo de unidad",
+      cell: ({ row }) => (
+        <span className={`text-grey-70 ${isMobile ? "text-sm" : ""}`}>
+          {row.original.product.unitType || "-"}
+        </span>
+      ),
+    },
+    {
       id: "quantity",
       header: "Cantidad",
       cell: ({ row }) => (
-        <div className={`text-grey-70 flex items-center ${isMobile ? "text-sm" : ""}`}>
-          <small>{row.original.count}</small>
-          <small>{row.original.unit}</small>
-          <div className="px-2">
-            <BiSolidEdit
-              className={`cursor-pointer ${isMobile ? "text-sm" : ""}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                openModalEdit(row.original);
-              }}
-            />
+        <div className="flex items-center gap-2 py-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUpdateQuantity(row.original, false);
+            }}
+            disabled={loadingRows[row.original.id || '']}
+            className={`p-1.5 rounded-md ${loadingRows[row.original.id || ''] ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#3342B1]/5'} text-[#3342B1] transition-colors`}
+          >
+            <FiMinus size={16} />
+          </button>
+          <div className="text-gray-700 min-w-[40px] text-center flex items-center justify-center">
+            {loadingRows[row.original.id || ''] ? (
+              <div className="w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+            ) : (
+              <>
+                {row.original.count}
+                {row.original.unit}
+              </>
+            )}
           </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUpdateQuantity(row.original, true);
+            }}
+            disabled={loadingRows[row.original.id || '']}
+            className={`p-1.5 rounded-md ${loadingRows[row.original.id || ''] ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#3342B1]/5'} text-[#3342B1] transition-colors`}
+          >
+            <FiPlus size={16} />
+          </button>
         </div>
       ),
     },
@@ -177,7 +213,7 @@ export const TableOrdersInModal: FC<Props> = ({
       header: "Precio por unidad",
       cell: ({ row }) => (
         <span className={`text-grey-70 ${isMobile ? "text-sm" : ""}`}>
-          ${row.original.price}
+          {formatArgentinePrice(row.original.price)}
         </span>
       ),
     },
@@ -210,38 +246,21 @@ export const TableOrdersInModal: FC<Props> = ({
         />
       </div>
 
-      <div
-        className={`flex ${
-          isMobile ? "justify-end mt-3" : "justify-end mt-2"
-        } text-white ${isMobile ? "text-base" : "text-xl"} w-full`}
-      >
-        {clientOrder?.discount ? (
-          <small
-            className={`text-green font-semibold ${isMobile ? "px-1" : "px-2"}`}
-          >
-            {clientOrder.discount}% descuento
-          </small>
-        ) : null}
-        <div
-          className={`flex justify-start ${
-            isMobile ? "min-w-28 px-2" : "min-w-36 px-3"
-          } bg-grey-50`}
-        >
-          <p>
-            Total: <small className="font-medium">${clientOrder?.total}</small>
-          </p>
+      <div className="flex justify-end items-center mt-4 w-full">
+        <div className="flex items-center gap-3">
+          {clientOrder?.discount ? (
+            <div className="px-3 py-1.5 bg-green-50 text-green-600 rounded-md font-medium">
+              {clientOrder.discount}% descuento
+            </div>
+          ) : null}
+          <div className="bg-gray-100 px-4 py-2 rounded-md shadow-sm border border-gray-200">
+            <span className="font-medium text-gray-700">Total:</span>
+            <span className="ml-2 font-bold text-gray-900">${clientOrder?.total}</span>
+          </div>
         </div>
       </div>
 
-      <EditProductModal
-        closeModal={closeModalEdit}
-        count={updatedCount}
-        modalIsOpen={modalEditIsOpen}
-        product={rowSelected?.product.name}
-        handleChange={handleChange}
-        handleEdit={handleEdit}
-        title="cantidad"
-      />
+      {/* Ya no necesitamos el modal de edición */}
       <DeleteProductModal
         closeModal={closeModalDelete}
         modalIsOpen={modalDeleteIsOpen}

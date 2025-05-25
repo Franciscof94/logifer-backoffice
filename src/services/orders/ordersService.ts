@@ -30,10 +30,17 @@ const OrdersService = {
     return response.data;
   },
   markAsSent: async (order: {
-    orderId: number | undefined;
+    orderId: string | undefined;
     deliveryDate: string;
   }) => {
-    await axiosInstance.post("/orders/mark-sent", order);
+    if (!order.orderId) {
+      throw new Error("orderId es requerido");
+    }
+
+    await axiosInstance.post("/orders/mark-as-sent", {
+      order_id: order.orderId,
+      deliveryDate: order.deliveryDate,
+    });
   },
   deleteProductOrder: async (
     orderId: string | undefined,
@@ -49,12 +56,23 @@ const OrdersService = {
     productId: string | undefined;
     count: number | undefined | null;
   }) => {
-    await axiosInstance.patch(
-      `/orders/edit-product-count/${order.orderId}/${order.productId}`,
-      {
-        count: order.count,
-      }
-    );
+    let count = order.count;
+    
+    if (typeof count === 'number') {
+      count = Math.round(count * 100) / 100;
+    }
+    
+    console.log('Enviando actualización de cantidad al servidor:', {
+      order_id: order.orderId,
+      product_id: order.productId,
+      count: count
+    });
+    
+    await axiosInstance.put(`/orders/edit-product-count`, {
+      order_id: order.orderId,
+      product_id: order.productId,
+      count: count,
+    });
   },
 };
 

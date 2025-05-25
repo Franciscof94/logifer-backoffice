@@ -4,10 +4,8 @@ import { Sidebar } from "../../components/Sidebar";
 import { cn } from "../../lib/utils";
 
 const Dashboard = () => {
-  // Estado para detectar si estamos en móvil
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Efecto para actualizar el estado cuando cambia el tamaño de la ventana
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);

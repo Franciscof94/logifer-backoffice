@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -41,8 +41,8 @@ export function DataTable<TData, TValue>({
   pageSize = 10,
   className,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
     data,
@@ -59,7 +59,7 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (enablePagination) {
       table.setPageSize(pageSize);
     }

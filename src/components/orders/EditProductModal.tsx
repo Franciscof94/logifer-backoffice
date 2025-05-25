@@ -3,13 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { setLoadingButton } from "../../store/slices/uiSlice";
 import { CustomSheet } from "../customs/CustomSheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 
 interface Props {
   modalIsOpen: boolean;
@@ -39,8 +33,8 @@ export const EditProductModal = ({
       setIsMobile(window.innerWidth < 768);
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleEditProduct = async () => {
@@ -55,7 +49,10 @@ export const EditProductModal = ({
       <div className="py-4">
         <div className="space-y-4">
           <div>
-            <label htmlFor="product" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="product"
+              className="block text-sm font-medium text-gray-700"
+            >
               Producto
             </label>
             <input
@@ -67,7 +64,10 @@ export const EditProductModal = ({
             />
           </div>
           <div>
-            <label htmlFor="count" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="count"
+              className="block text-sm font-medium text-gray-700"
+            >
               {title}
             </label>
             <input
@@ -113,9 +113,12 @@ export const EditProductModal = ({
 
   return (
     <Dialog open={modalIsOpen} onOpenChange={(open) => !open && closeModal()}>
-      <DialogContent className="sm:max-w-[425px] bg-white" style={{
-        borderRadius: 6
-      }}>
+      <DialogContent
+        className="sm:max-w-[425px] bg-white"
+        style={{
+          borderRadius: 6,
+        }}
+      >
         <DialogHeader className="pb-2">
           <DialogTitle className="text-xl font-medium text-gray-900">
             Editar {title}
@@ -126,4 +129,4 @@ export const EditProductModal = ({
       </DialogContent>
     </Dialog>
   );
-}; 
+};

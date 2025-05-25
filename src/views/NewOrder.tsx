@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { FormNewOrder } from "../components/orders/FormNewOrder";
 import { TableNewOrder } from "../components/orders/TableNewOrder";
 import { FormProvider, useForm, Resolver } from "react-hook-form";
@@ -15,9 +15,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import { setLoadingButton } from "../store/slices/uiSlice";
 import {
-  IClientOption,
   IProductOption,
   IUnitTypeOption,
+  IClientOption,
 } from "../interfaces/SelectOptions.interface";
 import { useClients } from "../hooks/queries/useClients";
 import { useProducts } from "../hooks/queries/useProducts";
@@ -37,6 +37,16 @@ export const NewOrder = () => {
 
   const [newOrders, setNewOrders] = useState<IOrderTable[]>([]);
   const [discountSheetOpen, setDiscountSheetOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const {
     data: clientsResponse = {
@@ -48,7 +58,7 @@ export const NewOrder = () => {
     },
     isLoading: isLoadingClients,
     error: clientsError,
-  } = useClients();
+  } = useClients(1, 100);
   const {
     data: productsResponse = { items: [], meta: {} },
     isLoading: isLoadingProducts,
@@ -98,9 +108,17 @@ export const NewOrder = () => {
     (product) => product.id === productValue
   ) as IProductOption | undefined;
 
-  const findClient = clientsResponse.data.find(
-    (client: IClientOption) => client.value === clientValue
-  ) as IClientOption | undefined;
+  const clientOptions = useMemo(() => {
+    return clientsResponse.data.map((client) => ({
+      value: client.id?.toString() || '',
+      label: client.nameAndLastname || '',
+      address: client.address || ''
+    })) as IClientOption[];
+  }, [clientsResponse.data]);
+
+  const findClient = clientOptions.find(
+    (client) => client.value === clientValue
+  );
 
   const findUnitType = unitTypeOptions?.find(
     (unitType: IUnitTypeOption) => unitType.value === unitTypeValue
@@ -175,7 +193,6 @@ export const NewOrder = () => {
 
   const handleSave = async () => {
     try {
-      // Assuming all products in newOrders belong to the same client for a single order
       const firstOrder = newOrders[0];
 
       if (!firstOrder) {
@@ -194,25 +211,21 @@ export const NewOrder = () => {
       const payload = {
         clientId: firstOrder.client.value,
         address: firstOrder.address || "",
-        orderDate: new Date().toISOString(), // Using current date/time, adjust if needed
-        total, // You might need to calculate the total based on products and discount
+        orderDate: new Date().toISOString(),
+        total,
         products: newOrders.map((item) => ({
           productId: item.product.id,
           count: item.count || 0,
           unitTypeId: item.unitType?.id || "",
-          price: item.price, // Include the price field
+          price: item.price,
         })),
         deliveryDate: null,
-        discount: discountValue, // Set deliveryDate to undefined initially
+        discount: discountValue,
       };
 
-      // TODO: Calculate the 'total' field based on products and discount
-      // TODO: Add a way to input and set the 'deliveryDate' field
 
       dispatch(setLoadingButton(true));
-      // Pass the single payload object instead of an array
       await createOrder.mutateAsync(payload, {
-        // Using 'as any' temporarily, update interface later
         onSuccess: () => {
           toast.success("Pedido creado exitosamente");
           setTimeout(() => {
@@ -230,15 +243,19 @@ export const NewOrder = () => {
 
   useEffect(() => {
     if (findClient) {
-      setValue("address", findClient.address);
+      setValue("address", findClient.address || "");
       dispatch(
         setClientName({
-          clientName: findClient,
+          clientName: {
+            value: clientValue,
+            label: findClient.label,
+            address: findClient.address,
+          },
         })
       );
       trigger("address");
     }
-  }, [findClient, setValue, dispatch, trigger]);
+  }, [findClient, setValue, dispatch, trigger, clientValue]);
 
   useEffect(() => {
     if (findUnitType?.isSelectCountDisabled) {
@@ -257,7 +274,7 @@ export const NewOrder = () => {
               <FormNewOrder
                 methods={methods}
                 handleSetOrder={handleSetOrder}
-                clients={clientsResponse.data}
+                clients={clientOptions}
                 products={productsResponse.items}
                 unitTypeOptions={unitTypeOptions}
                 isSelectCountDisabled={findUnitType?.isSelectCountDisabled}
@@ -284,7 +301,7 @@ export const NewOrder = () => {
                           Dirección:
                         </span>
                         <span className="ml-2 text-sm text-gray-900">
-                          {newOrders[0]?.address || ""}
+                          {clientNameStore.address || newOrders[0]?.address || ""}
                         </span>
                       </div>
                     </div>
@@ -298,23 +315,23 @@ export const NewOrder = () => {
                 handleDelete={handleDelete}
               />
 
-              <div className="flex justify-end items-center gap-4 max-w-[815px] mx-auto">
+              <div className={`${isMobile ? 'flex flex-col' : 'flex justify-end items-center'} gap-4 max-w-[815px] mx-auto`}>
                 <Button
                   color={newOrders.length === 0 ? "grey-50" : "verde"}
                   height="44px"
                   legend={
                     discountValue
                       ? `Descuento (${discountValue}%)`
-                      : "Aplicar descuento"
+                      : isMobile ? "Descuento" : "Aplicar descuento"
                   }
                   size="lg"
                   weight="normal"
                   disabled={newOrders.length === 0}
-                  className="px-6 shadow-sm hover:opacity-90 transition-opacity"
+                  className={`${isMobile ? 'w-full' : 'px-6'} shadow-sm hover:opacity-90 transition-opacity`}
                   onClick={() => setDiscountSheetOpen(true)}
                 />
                 <Button
-                  legend="Guardar Pedido"
+                  legend={isMobile ? "Guardar" : "Guardar Pedido"}
                   onClick={() => {
                     if (newOrders.length) {
                       handleSave();
@@ -323,7 +340,7 @@ export const NewOrder = () => {
                   }}
                   isLoading={isLoadingButton || createOrder.isPending}
                   size="xl"
-                  width="180px"
+                  width={isMobile ? "100%" : "180px"}
                   height="44px"
                   disabled={
                     !newOrders.length ||

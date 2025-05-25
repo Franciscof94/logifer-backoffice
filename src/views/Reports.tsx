@@ -1,36 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../components/customs/Button";
 import { ProductsReports } from "../components/reports/ProductsReports";
 import { SalesReports } from "../components/reports/SalesReports";
 
 export const Reports = () => {
   const [reportIs, setReportIs] = useState<"sales" | "products">("sales");
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div>
-      <div className="flex justify-center items-center">
-        <div className="w-full max-w-[1300px] m-auto my-3 flex justify-center gap-x-2.5">
-          <div>
+      <div className="flex justify-center items-center px-4 sm:px-0">
+        <div className="w-full max-w-[1300px] m-auto my-3">
+          <div className={`${isMobile ? 'flex flex-col gap-y-2' : 'flex justify-center gap-x-2.5'}`}>
             <Button
               color={reportIs === "sales" ? "blue" : "grey-50"}
               height="40px"
-              legend="Reportes por ventas"
+              legend={isMobile ? "Ventas" : "Reportes por ventas"}
               size="xl"
               weight=""
-              width="250px"
+              width={isMobile ? "100%" : "250px"}
               onClick={() => {
                 setReportIs("sales");
               }}
             />
-          </div>
-          <div>
             <Button
               color={reportIs === "products" ? "blue" : "grey-50"}
               height="40px"
-              legend="Reportes por productos"
+              legend={isMobile ? "Productos" : "Reportes por productos"}
               size="xl"
               weight=""
-              width="250px"
+              width={isMobile ? "100%" : "250px"}
               onClick={() => {
                 setReportIs("products");
               }}
@@ -39,14 +47,14 @@ export const Reports = () => {
         </div>
       </div>
       {reportIs === "sales" ? (
-        <div className="flex justify-center items-center ">
-          <div className="w-full max-w-[1300px] m-auto  ">
+        <div className="flex justify-center items-center">
+          <div className="w-full max-w-[1300px] m-auto px-2 sm:px-4">
             <SalesReports />
           </div>
         </div>
       ) : (
         <div className="flex justify-center items-center">
-          <div className="w-full max-w-[1300px] m-auto">
+          <div className="w-full max-w-[1300px] m-auto px-2 sm:px-4">
             <ProductsReports />
           </div>
         </div>

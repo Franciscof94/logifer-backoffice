@@ -23,7 +23,7 @@ export const Login = () => {
     resolver: yupResolver(UserSchema),
     mode: "onChange",
     defaultValues: {
-      email: "ferraromateriales@gmail.com",
+      email: "ferraromateriales@logifer.com",
       password: "@Logifer2024",
     },
   });
@@ -31,7 +31,7 @@ export const Login = () => {
   const { handleSubmit } = methods;
 
   const auth = useSelector((state: RootState) => state.authData.auth);
-  
+
   const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
 
   const closeModal = () => {
@@ -41,7 +41,6 @@ export const Login = () => {
   const openModal = () => {
     setModalIsOpen(true);
   };
-
 
   useEffect(() => {
     if (auth?.accessToken) {
@@ -54,11 +53,30 @@ export const Login = () => {
       dispatch(setLoadingButton(true));
       const res = await AuthService.postLogin(data);
       dispatch(setLoadingButton(false));
-      const { accessToken, refreshToken, user } = res;
-      Cookies.set("token", JSON.stringify({ accessToken, refreshToken }));
 
-      dispatch(login({ accessToken, user, refreshToken }));
-    } catch (error: Error | AxiosError | any) {
+      console.log("Respuesta del login:", res);
+      const {
+        data: { access_token, refreshToken, user },
+      } = res;
+
+      console.log("ress", res.data.accessToken);
+
+      Cookies.set("token", access_token, { expires: 7 });
+
+      dispatch(
+        login({
+          accessToken: access_token,
+          refreshToken,
+          user: user || { id: 1, name: "Usuario" },
+        })
+      );
+
+      setTimeout(() => {
+        console.log("Login exitoso, redirigiendo a home...");
+        navigate("/", { replace: true });
+      }, 500);
+    } catch (error: any) {
+      console.error("Error en login:", error);
       dispatch(setLoadingButton(false));
       openModal();
       setError(error.message);
@@ -68,7 +86,7 @@ export const Login = () => {
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex-1 flex bg-grey align-center justify-center">
+        <div className="flex-1 flex bg-grey align-center h-screen justify-center">
           <div className="w-[365px]">
             <h1 className="text-4xl font-medium text-black text-center py-11">
               Ingresar

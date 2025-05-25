@@ -142,7 +142,7 @@ export const Sidebar = () => {
   return (
     <aside className={cn(
       "fixed left-0 z-40 border-r bg-white transition-all duration-300 overflow-hidden",
-      isMobile ? "" : "top-[4rem] h-[calc(100vh-4rem)]", // Modified height and top
+      isMobile ? "" : "top-[4rem] h-[calc(100vh-4rem)]",
       isOpen ? "w-[240px]" : "w-[70px]"
     )}>
       <NavContent />

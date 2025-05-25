@@ -20,7 +20,6 @@ export const ShowOrderModal: FC<Props> = ({
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Update mobile state when window is resized
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);

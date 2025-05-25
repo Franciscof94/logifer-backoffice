@@ -1,13 +1,13 @@
-import React, { FC, useEffect, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { FC, useEffect, useState } from "react";
+import { DataTable } from "../customs/DataTable";
+import { IOrderTable } from "../../interfaces/Orders.interface";
 import { TiDelete } from "react-icons/ti";
 import { FiMinus, FiPlus } from "react-icons/fi";
 import { DeleteProductModal } from "./DeleteProductModal";
-import { IOrderTable } from "../../interfaces";
 import { useFormContext } from "react-hook-form";
-import { Button } from "../customs/Button";
 import { DiscountSheet } from "./DiscountSheet";
-import { DataTable } from "../customs/DataTable";
+import { formatArgentinePrice } from "../../utils/formatters";
 
 interface Props {
   data: IOrderTable[];
@@ -61,13 +61,11 @@ export const TableNewOrder: FC<Props> = ({
           const isUnidadType = product.unitType?.id === "4";
           const isFractionalUnit = product.unitType && fractionalUnitIds.includes(product.unitType.id);
           
-          const incrementAmount = isUnidadType 
-            ? 0.25 
-            : isFractionalUnit && product.unitType
-              ? product.unitType.equivalencyValue 
-              : 1;
+          const shouldUseSmallIncrements = isUnidadType || isFractionalUnit;
+          
+          const incrementAmount = shouldUseSmallIncrements ? 0.25 : 1;
 
-          const minAmount = isUnidadType ? 0.25 : incrementAmount;
+          const minAmount = shouldUseSmallIncrements ? 0.25 : 1;
 
           const newCount = increment 
             ? currentCount + incrementAmount
@@ -86,7 +84,8 @@ export const TableNewOrder: FC<Props> = ({
   };
 
   const total = data?.reduce((acc: number, row: IOrderTable) => {
-    const price = parseFloat(row.price.toString().replace("$", ""));
+    const priceStr = String(row.price || 0);
+    const price = parseFloat(priceStr.replace(/[^0-9.-]+/g, ''));
     if (row.count) {
       let subtotal = price * row.count;
       if (discountValue) {
@@ -202,7 +201,7 @@ export const TableNewOrder: FC<Props> = ({
                   </>
                 )}
                 <span className={`${isMobile ? "text-xl" : "text-2xl"} font-semibold mt-1`}>
-                  ${totalConDescuento.toFixed(1)}
+                  {formatArgentinePrice(totalConDescuento)}
                 </span>
               </div>
             </div>

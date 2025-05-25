@@ -27,7 +27,6 @@ export interface IUnitTypeOption {
   isSelectCountDisabled?: boolean;
 }
 
-// Interfaces para las respuestas del API
 interface RawUnitTypeOption {
   id: number;
   unitTypeDescription: string;

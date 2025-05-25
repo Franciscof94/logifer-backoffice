@@ -40,7 +40,7 @@ export const FormNewProduct: FC<Props> = ({ methods, isMobile = false }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={isMobile ? "w-full" : ""}>
+    <form onSubmit={handleSubmit(onSubmit)} className={`${isMobile ? 'w-full px-4' : 'w-[813px]'}`}>
       <div className="flex flex-col">
         <label className={`${isMobile ? 'text-lg' : 'text-xl'} mb-1`}>Nombre del producto</label>
         <InputText

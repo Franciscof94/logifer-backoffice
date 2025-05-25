@@ -6,7 +6,11 @@ export const ProductSchema = object({
     .min(3, "El número mínimo de caracteres es 3"),
   stock: number()
     .required("El campo es obligatorio")
-    .typeError("El precio debe ser un número"),
+    .typeError("El stock debe ser un número")
+    .test('is-decimal', 'El stock debe ser un número válido', value => {
+      if (value === undefined || value === null) return true;
+      return /^\d+(\.\d+)?$/.test(String(value));
+    }),
   price: number()
     .required("El campo es obligatorio")
     .typeError("El precio debe ser un número"),

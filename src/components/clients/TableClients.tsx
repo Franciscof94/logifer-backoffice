@@ -1,58 +1,92 @@
-import React, { FC, useState } from "react";
-import { TiDelete } from "react-icons/ti";
-import { BiSolidEdit } from "react-icons/bi";
+import { FC, useState, useEffect, useMemo } from "react";
 import { Pagination } from "../pagination/Pagination";
-import { EditClientModal } from "./EditClientModal";
-import { DeleteClientModal } from "./DeleteClientModal";
 import { IClient } from "../../interfaces";
-import { IPagination } from "../../interfaces/Pagination.interface";
 import ClientsService from "../../services/clients/clientsServices";
 import { ToastContainer } from "react-toastify";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "../customs/DataTable";
+import { useClients } from "../../hooks/queries/useClients";
+import { EditClientDrawer } from "./EditClientDrawer";
+import { DeleteClientDrawer } from "./DeleteClientDrawer";
+import { MoreVertical, Edit, Trash2 } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface Props {
-  refreshTable: (page?: number, size?: number) => void;
-  clients: IClient[] | undefined;
-  pagination: IPagination | undefined;
-  loadingTableOrders?: boolean;
+  page: number;
+  onPageChange: (page: number) => void;
 }
 
 export const TableClients: FC<Props> = ({
-  refreshTable,
-  clients = [],
-  pagination,
-  loadingTableOrders,
+  page,
+  onPageChange,
 }) => {
-  const [modalDeleteIsOpen, setModalDeleteIsOpen] = useState(false);
-  const [modalEditIsOpen, setModalEditIsOpen] = useState(false);
+  const { data, isLoading, refetch } = useClients(page, 9);
+  const dispatch = useDispatch();
+  
+  const [localClients, setLocalClients] = useState<IClient[]>([]);
+  
+  const clients = useMemo(() => data?.data ? data.data : [], [data]);
+  const pagination = useMemo(() => data ? {
+    page: data.page || 0,
+    size: data.size || 9,
+    totalElements: data.totalElements || 0,
+    totalPages: data.totalPages || 0
+  } : undefined, [data]);
+  
+  useEffect(() => {
+    if (clients && clients.length > 0) {
+      setLocalClients(clients);
+    }
+  }, [clients]);
+  const [drawerDeleteIsOpen, setDrawerDeleteIsOpen] = useState(false);
+  const [drawerEditIsOpen, setDrawerEditIsOpen] = useState(false);
   const [rowSelected, setRowSelected] = useState<IClient>();
 
-  const openModalDelete = (row: IClient) => {
+  const openDrawerDelete = (row: IClient) => {
     setRowSelected(row);
-    setModalDeleteIsOpen(true);
+    setDrawerDeleteIsOpen(true);
   };
 
-  const closeModalDelete = () => {
-    setModalDeleteIsOpen(false);
+  const closeDrawerDelete = () => {
+    setDrawerDeleteIsOpen(false);
   };
 
-  const openModalEdit = (row: IClient) => {
+  const openDrawerEdit = (row: IClient) => {
     setRowSelected(row);
-    setModalEditIsOpen(true);
+    setDrawerEditIsOpen(true);
   };
 
-  const closeModalEdit = () => {
-    setModalEditIsOpen(false);
+  const closeDrawerEdit = () => {
+    setDrawerEditIsOpen(false);
   };
+
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async (id: number | undefined) => {
+    if (isDeleting) return;
+    
     try {
+      setIsDeleting(true);
+      dispatch(setLoadingButton(true));
       await ClientsService.deleteClient(id);
-      refreshTable();
-      closeModalDelete();
+      
+      setLocalClients(prevClients => prevClients.filter(client => client.id !== id));
+      
+      closeDrawerDelete();
+      
+      refetch();
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsDeleting(false);
+      dispatch(setLoadingButton(false));
     }
   };
 
@@ -81,22 +115,34 @@ export const TableClients: FC<Props> = ({
       id: "actions",
       header: () => <div className="text-center">Acciones</div>,
       cell: ({ row }) => (
-        <div className="flex justify-center gap-4">
-          <BiSolidEdit
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              openModalEdit(row.original);
-            }}
-          />
-          <TiDelete
-            color="#F44336"
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              openModalDelete(row.original);
-            }}
-          />
+        <div className="flex justify-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="cursor-pointer focus:outline-none">
+              <MoreVertical size={20} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="cursor-pointer flex items-center gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openDrawerEdit(row.original);
+                }}
+              >
+                <Edit size={16} />
+                <span>Editar</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer flex items-center gap-2 text-red-500"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openDrawerDelete(row.original);
+                }}
+              >
+                <Trash2 size={16} />
+                <span>Eliminar</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },
@@ -107,8 +153,8 @@ export const TableClients: FC<Props> = ({
       <div className="max-h-[380px]">
         <DataTable
           columns={columns}
-          data={clients}
-          isLoading={loadingTableOrders}
+          data={localClients.length > 0 ? localClients : clients}
+          isLoading={isLoading}
           className="bg-white"
         />
       </div>
@@ -116,24 +162,24 @@ export const TableClients: FC<Props> = ({
       <div className="mt-4 flex justify-end">
         <Pagination
           currentPage={pagination?.page ?? 0}
-          onChangePage={(page) => refreshTable(page)}
+          onChangePage={(newPage) => onPageChange(newPage)}
           totalItems={pagination?.totalElements ?? 0}
           filasPorPaginas={pagination?.size}
         />
       </div>
 
-      <DeleteClientModal
-        closeModal={closeModalDelete}
-        modalIsOpen={modalDeleteIsOpen}
+      <DeleteClientDrawer
+        onClose={closeDrawerDelete}
+        isOpen={drawerDeleteIsOpen}
         client={rowSelected}
         handleDelete={handleDelete}
       />
 
-      <EditClientModal
-        closeModal={closeModalEdit}
-        modalIsOpen={modalEditIsOpen}
+      <EditClientDrawer
+        onClose={closeDrawerEdit}
+        isOpen={drawerEditIsOpen}
         client={rowSelected}
-        refreshTable={refreshTable}
+        refreshTable={() => onPageChange(page)}
       />
 
       <ToastContainer />

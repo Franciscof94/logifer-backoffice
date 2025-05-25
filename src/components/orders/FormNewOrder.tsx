@@ -52,10 +52,8 @@ export const FormNewOrder: FC<Props> = ({
     ({ address: _, ...clientWithoutAddress }) => clientWithoutAddress
   );
 
-  // Estado para detectar si estamos en móvil
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Efecto para actualizar el estado cuando cambia el tamaño de la ventana
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -65,14 +63,12 @@ export const FormNewOrder: FC<Props> = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Watch all required fields
   const product = watch("product");
   const client = watch("client");
   const unitType = watch("unitType");
   const count = watch("count");
   const address = watch("address");
 
-  // Check if all required fields are filled
   const allFieldsFilled = product && client && unitType && count && address;
 
   return (

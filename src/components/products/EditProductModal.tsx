@@ -9,7 +9,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import ProductsService from "../../services/products/productsService";
 import { toast } from "react-toastify";
 import { setLoadingButton } from "../../store/slices/uiSlice";
-import { AxiosError } from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Dialog,
@@ -48,7 +47,7 @@ export const EditProductModal: FC<Props> = ({
 
   useEffect(() => {
     setValue("price", product?.price ?? 0);
-    setValue("product", product?.product ?? "");
+    setValue("productName", product?.productName ?? "");
     setValue("stock", product?.stock ?? 0);
   }, [setValue, product, modalIsOpen]);
 
@@ -60,7 +59,7 @@ export const EditProductModal: FC<Props> = ({
       toast.success("Producto editado exitosamente!");
       refreshTable();
       closeModal();
-    } catch (error: Error | AxiosError | any) {
+    } catch (error: any) {
       dispatch(setLoadingButton(false));
       toast.error(error.message);
     }
@@ -72,7 +71,7 @@ export const EditProductModal: FC<Props> = ({
         <DialogHeader>
           <div className="flex justify-between items-center">
             <DialogTitle className="text-2xl font-medium text-black">
-              Producto: <small>{product?.product}</small>
+              Producto: <small>{product?.productName}</small>
             </DialogTitle>
             <button onClick={closeModal} className="h-6 w-6">
               <FaTimes className="h-6 w-6 text-gray-400" />
@@ -82,7 +81,7 @@ export const EditProductModal: FC<Props> = ({
 
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <FormEditProduct />
+            <FormEditProduct methods={methods} />
 
             <DialogFooter className="sm:justify-end gap-x-2">
               <Button

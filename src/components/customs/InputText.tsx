@@ -42,20 +42,22 @@ export const InputText: FC<Props> = ({
         {...inputProps}
         disabled={disabled}
         type={type}
-        className={`${color ? color : ""} rounded-md h-11 px-3 ${disabled ? "bg-gray-200" : ""} ${
-          width ?? ''
-        }`}
+        className={`${color ? color : ""} border border-white rounded-md h-11 px-3 ${
+          disabled ? "bg-gray-200" : ""
+        } ${width ?? ""}`}
         placeholder={placeholder}
       />
-      <div className="mt-2">
-        <ErrorMessage
-          errors={errors}
-          name={name}
-          render={({ message }) => (
-            <p className="text-[#ED4337] font-normal">{message}</p>
-          )}
-        />
-      </div>
+      {errors[name] && (
+        <div className="mt-2">
+          <ErrorMessage
+            errors={errors}
+            name={name}
+            render={({ message }) => (
+              <p className="text-[#ED4337] font-normal">{message}</p>
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 };

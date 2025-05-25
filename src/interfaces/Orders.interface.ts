@@ -46,6 +46,7 @@ export interface IOrderModal {
   product: {
     id: string;
     name: string;
+    unitType?: string;
   };
   count: number;
   price: string;
@@ -70,6 +71,7 @@ export interface Data {
   send: boolean;
   address: string;
   order: Order[];
+  createdBy?: string;
 }
 
 export interface Order {
@@ -77,6 +79,7 @@ export interface Order {
   product: {
     id: string;
     name: string;
+    unitType?: string;
   };
   count: number;
   price: string;

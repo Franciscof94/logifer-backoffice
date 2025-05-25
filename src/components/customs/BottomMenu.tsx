@@ -13,7 +13,7 @@ export const BottomMenu: FC<BottomMenuProps> = ({ isOpen, onClose, children }) =
     if (isOpen) {
       setIsVisible(true);
     } else {
-      setTimeout(() => setIsVisible(false), 300); // Delay para animación
+      setTimeout(() => setIsVisible(false), 300);
     }
   }, [isOpen]);
 

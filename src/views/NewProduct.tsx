@@ -13,7 +13,6 @@ export const NewProduct = () => {
   
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  // Efecto para actualizar el estado cuando cambia el tamaño de la ventana
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
@@ -26,7 +25,7 @@ export const NewProduct = () => {
   return (
     <FormProvider {...methods}>
       <div>
-        <div className="flex justify-center">
+        <div className="flex justify-center pt-6 md:pt-10">
           <FormNewProduct methods={methods} isMobile={isMobile} />
         </div>
       </div>

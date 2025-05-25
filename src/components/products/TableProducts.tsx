@@ -1,17 +1,31 @@
-import React, { FC, useState } from "react";
-import { TiDelete } from "react-icons/ti";
-import { BiSolidEdit } from "react-icons/bi";
+import { FC, useState, useEffect, useMemo } from "react";
 import { IProduct } from "../../interfaces";
-import { DeleteProductModal } from "./DeleteProductModal";
-import { EditProductModal } from "./EditProductModal";
+import ProductsService from "../../services/products/productsService";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "../customs/DataTable";
-import ProductsService from "../../services/products/productsService";
+import { EditProductDrawer } from "./EditProductDrawer";
+import { DeleteProductDrawer } from "./DeleteProductDrawer";
+import { MoreVertical, Edit, Trash2 } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { setLoadingButton } from "../../store/slices/uiSlice";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { formatArgentinePrice, formatArgentineNumber } from "../../utils/formatters";
 
 interface Props {
   products: IProduct[];
   refreshTable: () => void;
   loadingTableOrders?: boolean;
+  pagination?: {
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+  };
 }
 
 export const TableProducts: FC<Props> = ({
@@ -19,85 +33,114 @@ export const TableProducts: FC<Props> = ({
   refreshTable,
   loadingTableOrders,
 }) => {
-  const [modalDeleteIsOpen, setModalDeleteIsOpen] = useState(false);
-  const [modalEditIsOpen, setModalEditIsOpen] = useState(false);
+  const [localProducts, setLocalProducts] = useState<IProduct[]>([]);
+  const dispatch = useDispatch();
+  
+  const productsData = useMemo(() => products || [], [products]);
+  
+  useEffect(() => {
+    if (productsData && productsData.length > 0) {
+      setLocalProducts(productsData);
+    }
+  }, [productsData]);
+  
+  const [drawerDeleteIsOpen, setDrawerDeleteIsOpen] = useState(false);
+  const [drawerEditIsOpen, setDrawerEditIsOpen] = useState(false);
   const [rowSelected, setRowSelected] = useState<IProduct>();
+  
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const openModalDelete = (row: IProduct) => {
+  const openDrawerDelete = (row: IProduct) => {
     setRowSelected(row);
-    setModalDeleteIsOpen(true);
+    setDrawerDeleteIsOpen(true);
   };
 
-  const closeModalDelete = () => {
-    setModalDeleteIsOpen(false);
+  const closeDrawerDelete = () => {
+    setDrawerDeleteIsOpen(false);
   };
 
-  const openModalEdit = (row: IProduct) => {
+  const openDrawerEdit = (row: IProduct) => {
     setRowSelected(row);
-    setModalEditIsOpen(true);
+    setDrawerEditIsOpen(true);
   };
 
-  const closeModalEdit = () => {
-    setModalEditIsOpen(false);
+  const closeDrawerEdit = () => {
+    setDrawerEditIsOpen(false);
   };
 
   const handleDelete = async (id: number | undefined) => {
+    if (isDeleting) return;
+    
     try {
+      setIsDeleting(true);
+      dispatch(setLoadingButton(true));
       await ProductsService.deleteProduct(id);
+      
+      setLocalProducts(prevProducts => prevProducts.filter(product => product.id !== id));
+      
+      closeDrawerDelete();
+      
       refreshTable();
-      closeModalDelete();
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsDeleting(false);
+      dispatch(setLoadingButton(false));
     }
   };
 
-  const handleEdit = async (id: number | undefined) => {
-    if (!rowSelected) return;
-    try {
-      await ProductsService.patchProduct(id, rowSelected);
-      refreshTable();
-      closeModalEdit();
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const columns: ColumnDef<IProduct>[] = [
     {
       id: "productName",
       header: "Nombre",
+      accessorKey: "productName",
       cell: ({ row }) => <span>{row.original.productName}</span>,
     },
     {
       id: "price",
       header: "Precio",
-      cell: ({ row }) => <span>${row.original.price}</span>,
+      accessorKey: "price",
+      cell: ({ row }) => <span>{formatArgentinePrice(row.original.price)}</span>,
     },
     {
       id: "stock",
       header: "Stock",
-      cell: ({ row }) => <span>{row.original.stock}</span>,
+      accessorKey: "stock",
+      cell: ({ row }) => <span>{formatArgentineNumber(row.original.stock)}</span>,
     },
     {
       id: "actions",
-      header: () => <div className="text-center">Acciones</div>,
+      header: () => <div className="text-right pr-6">Acciones</div>,
       cell: ({ row }) => (
-        <div className="flex justify-center gap-4">
-          <BiSolidEdit
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              openModalEdit(row.original);
-            }}
-          />
-          <TiDelete
-            color="#F44336"
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              openModalDelete(row.original);
-            }}
-          />
+        <div className="flex justify-end pr-6">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="cursor-pointer focus:outline-none">
+              <MoreVertical size={20} />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="cursor-pointer flex items-center gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openDrawerEdit(row.original);
+                }}
+              >
+                <Edit size={16} />
+                <span>Editar</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer flex items-center gap-2 text-red-500"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openDrawerDelete(row.original);
+                }}
+              >
+                <Trash2 size={16} />
+                <span>Eliminar</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },
@@ -108,24 +151,23 @@ export const TableProducts: FC<Props> = ({
       <div className="max-h-[380px]">
         <DataTable
           columns={columns}
-          data={products}
+          data={localProducts.length > 0 ? localProducts : productsData}
           isLoading={loadingTableOrders}
           className="bg-white"
         />
       </div>
 
-      <DeleteProductModal
-        closeModal={closeModalDelete}
-        modalIsOpen={modalDeleteIsOpen}
+      <DeleteProductDrawer
+        onClose={closeDrawerDelete}
+        isOpen={drawerDeleteIsOpen}
         product={rowSelected}
         handleDelete={handleDelete}
       />
 
-      <EditProductModal
-        closeModal={closeModalEdit}
-        modalIsOpen={modalEditIsOpen}
+      <EditProductDrawer
+        onClose={closeDrawerEdit}
+        isOpen={drawerEditIsOpen}
         product={rowSelected}
-        handleEdit={handleEdit}
         refreshTable={refreshTable}
       />
     </div>

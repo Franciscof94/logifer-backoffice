@@ -3,6 +3,7 @@ interface OrdersState {
   clientName: {
     value: number | null;
     label: string;
+    address?: string;
   };
   addressAndClientNameDisabled: boolean;
   loadingTableOrders: boolean;
