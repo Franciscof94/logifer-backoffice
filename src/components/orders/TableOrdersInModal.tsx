@@ -227,7 +227,7 @@ export const TableOrdersInModal: FC<Props> = ({
         
         // Determinar color según el estado
         const getStatusStyles = (statusValue: string) => {
-          if (statusValue === "Enviado") return "bg-green-100 text-green-800";
+          if (statusValue === "Enviado") return "bg-green text-white";
           if (statusValue === "Pendiente") return "bg-amber-100 text-amber-800";
           return "bg-gray-100 text-gray-800";
         };
