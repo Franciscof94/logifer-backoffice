@@ -219,31 +219,31 @@ export const TableOrdersInModal: FC<Props> = ({
     },
     {
       id: "shipmentStatus",
-      header: "Estado de envío",
+      header: "Estado",
       cell: ({ row }) => {
         const isShipped = row.original.shipped || row.original.sent;
         const deliveryDate = row.original.deliveryDate;
+        const status = isShipped ? "Enviado" : "Pendiente";
+        
+        // Determinar color según el estado
+        const getStatusStyles = (statusValue: string) => {
+          if (statusValue === "Enviado") return "bg-green-100 text-green-800";
+          if (statusValue === "Pendiente") return "bg-amber-100 text-amber-800";
+          return "bg-gray-100 text-gray-800";
+        };
         
         return (
           <div className="flex flex-col">
-            {isShipped ? (
-              <>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Enviado
-                </span>
-                {deliveryDate && (
-                  <span className="text-xs text-gray-500 mt-1">
-                    {new Date(deliveryDate).toLocaleDateString('es-AR', {
-                      year: 'numeric',
-                      month: '2-digit',
-                      day: '2-digit'
-                    })}
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                Pendiente
+            <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-md w-fit ${getStatusStyles(status)}`}>
+              {status}
+            </span>
+            {isShipped && deliveryDate && (
+              <span className="text-xs text-gray-500 mt-1">
+                {new Date(deliveryDate).toLocaleDateString('es-AR', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit'
+                })}
               </span>
             )}
           </div>
