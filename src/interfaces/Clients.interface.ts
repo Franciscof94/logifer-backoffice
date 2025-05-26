@@ -2,9 +2,9 @@ import { IOrderModal } from ".";
 
 export interface IClient {
   nameAndLastname: string;
-  phone: string;
+  phone?: string;
   address: string;
-  email: string;
+  email?: string;
   id?: number;
 }
 

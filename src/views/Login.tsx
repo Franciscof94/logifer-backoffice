@@ -23,8 +23,8 @@ export const Login = () => {
     resolver: yupResolver(UserSchema),
     mode: "onChange",
     defaultValues: {
-      email: "ferraromateriales@logifer.com",
-      password: "@Logifer2024",
+      email: "",
+      password: "",
     },
   });
 

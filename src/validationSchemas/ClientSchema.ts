@@ -9,8 +9,8 @@ export const ClientSchema = object({
     .min(3, "El numero minimo de caracteres es 3"),
   email: string()
     .email("El email no es valido")
-    .required("El campo es obligatorio"),
+    .optional(),
   phone: string()
-    .required("El campo es obligatorio")
-    .min(6, "El numero minimo de caracteres es 6"),
+    .min(6, "El numero minimo de caracteres es 6")
+    .optional(),
 });
