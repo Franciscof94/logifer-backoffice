@@ -29,7 +29,7 @@ export const TableFilters: FC<Props> = ({ methods }) => {
   const onSubmit: SubmitHandler<IClient> = (data) => {
     const newObj: IClientsFilter = {
       nameAndLastname: data.nameAndLastname,
-      email: data.email,
+      email: data.email ?? '',
       address: data.address,
     };
     dispatch(setFiltersClient(newObj));
