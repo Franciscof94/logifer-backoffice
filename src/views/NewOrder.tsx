@@ -227,7 +227,7 @@ export const NewOrder = () => {
       dispatch(setLoadingButton(true));
       await createOrder.mutateAsync(payload, {
         onSuccess: () => {
-          toast.success("Pedido creado exitosamente");
+          // El toast de éxito ya se muestra en el hook useCreateOrder
           setTimeout(() => {
             navigate("/pedidos");
           }, 1000);

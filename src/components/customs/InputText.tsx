@@ -31,9 +31,42 @@ export const InputText: FC<Props> = ({
   const {
     register,
     formState: { errors },
+    setValue,
   } = methods;
 
-  const inputProps = type === "number" ? { min: 0, ...props } : props;
+  // Configuración especial para campos numéricos
+  const inputProps = type === "number" ? { 
+    min: 0, 
+    ...props,
+    onChange: (e: ChangeEvent<HTMLInputElement>) => {
+      // Manejo especial para fracciones comunes
+      const value = e.target.value;
+      if (value === "1/4") {
+        setValue(name, 0.25, { shouldValidate: true });
+        return;
+      } else if (value === "1/2") {
+        setValue(name, 0.5, { shouldValidate: true });
+        return;
+      } else if (value === "3/4") {
+        setValue(name, 0.75, { shouldValidate: true });
+        return;
+      }
+      
+      // Para valores numéricos normales
+      const numValue = parseFloat(value);
+      if (!isNaN(numValue)) {
+        setValue(name, numValue, { shouldValidate: true });
+      } else if (value === "") {
+        // Si está vacío, establecemos null en lugar de NaN
+        setValue(name, null, { shouldValidate: true });
+      }
+      
+      // Llamar al onChange original si existe
+      if (props.onChange) {
+        props.onChange(e);
+      }
+    }
+  } : props;
 
   return (
     <div className="flex flex-col">

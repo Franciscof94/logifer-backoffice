@@ -1,8 +1,9 @@
-import { FC, useState, useRef, useEffect, useMemo } from "react";
+import { FC, useState, useEffect, useMemo } from "react";
 import { TiDelete } from "react-icons/ti";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { FaCheck } from "react-icons/fa";
-import { ToastContainer, toast } from "react-toastify";
+import { FiMoreVertical } from "react-icons/fi";
+import { ToastContainer } from "react-toastify";
 import { Pagination } from "../pagination/Pagination";
 import { Data, IClientOrder } from "../../interfaces";
 import { CheckOrderModal } from "./CheckOrderModal";
@@ -11,9 +12,14 @@ import { useOrders } from "../../hooks/queries/useOrders";
 import { DataTable } from "../customs/DataTable";
 import { formatTableDate } from "../../utils/dateUtils";
 import { ShowOrderDrawer } from "./ShowOrderDrawer";
-import OrdersService from "../../services/orders/ordersService";
-import { format } from "date-fns";
-import { useQueryClient } from "@tanstack/react-query";
+import { DeleteOrderDrawer } from "./DeleteOrderDrawer";
+import { PartialShipmentDrawer } from "./PartialShipmentDrawer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface Props {
   page: number;
@@ -21,23 +27,34 @@ interface Props {
 }
 
 export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
-  const queryClient = useQueryClient();
   const [drawerShowIsOpen, setIsOpenDrawerShow] = useState(false);
+  const [deleteDrawerIsOpen, setDeleteDrawerIsOpen] = useState(false);
+  const [shipmentDrawerIsOpen, setShipmentDrawerIsOpen] = useState(false);
   const [modalCheckOrderIsOpen, setIsOpenModalCheckOrder] = useState(false);
   const [clientSelected, setClientSelected] = useState<IClientOrder>();
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const calendarRef = useRef<HTMLDivElement>(null);
-  
+  const [orderToDelete, setOrderToDelete] = useState<Data>();
+  const [orderToShip, setOrderToShip] = useState<Data>();
+  // Usamos una media query real para detectar dispositivos móviles
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 640);
+    // Usamos matchMedia para una detección más confiable
+    const mediaQuery = window.matchMedia("(max-width: 640px)");
+
+    // Función para actualizar el estado basado en la media query
+    const updateIsMobile = (e: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile(e.matches);
     };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    // Verificar inmediatamente
+    updateIsMobile(mediaQuery);
+
+    // Agregar listener para cambios
+    const listener = (e: MediaQueryListEvent) => updateIsMobile(e);
+    mediaQuery.addEventListener("change", listener);
+
+    // Limpiar
+    return () => mediaQuery.removeEventListener("change", listener);
   }, []);
 
   const { data: ordersData, isLoading } = useOrders(page);
@@ -70,64 +87,13 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
     return null;
   }, [ordersData]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
-        setShowCalendar(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
   const handleCheckOrder = async (e: React.MouseEvent, order: Data) => {
     e.stopPropagation();
-    
-    if (order.id) {
-      setActiveOrderId(order.id);
-      setShowCalendar(true);
-    }
-  };
-  
-  const handleDateSelect = (dateString: string) => {
-    const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
-    
-    const adjustedDate = new Date(year, month - 1, day, 12, 0, 0);
-    
-    setSelectedDate(adjustedDate);
-  };
-  
-  const handleConfirmSend = async () => {
-    if (activeOrderId && selectedDate) {
-      try {
-        const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-        
-        await OrdersService.markAsSent({
-          orderId: activeOrderId,
-          deliveryDate: formattedDate
-        });
-        
-        toast.success('Pedido marcado como enviado');
-        
-        await queryClient.invalidateQueries({ queryKey: ['orders'] });
-        await queryClient.refetchQueries({ queryKey: ['orders'] });
-        
-        setShowCalendar(false);
-        setActiveOrderId(null);
-        setSelectedDate(null);
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
-      } catch (error) {
-        toast.error('Error al marcar el pedido como enviado');
-        console.error(error);
-      }
-    } else {
-      toast.error('Selecciona una fecha de envío');
+
+    // Abrimos el drawer de envío parcial
+    if (order) {
+      setOrderToShip(order);
+      setShipmentDrawerIsOpen(true);
     }
   };
 
@@ -204,7 +170,6 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
       id: "send",
       header: "Pedido enviado",
       cell: ({ row }) => {
-      
         return (
           <div className="flex justify-end pr-3">
             {row.original.send ? (
@@ -221,65 +186,54 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                   size={24}
                   className="cursor-pointer"
                 />
-                {showCalendar && activeOrderId === row.original.id && (
-                  <div 
-                    ref={calendarRef}
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowCalendar(false);
-                    }}
-                  >
-                    <div 
-                      className="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full mx-4"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="mb-4 font-medium text-xl text-gray-800">Selecciona fecha de envío:</div>
-                      <input 
-                        type="date" 
-                        className="w-full p-3 border border-gray-300 rounded-md text-base"
-                        value={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''}
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            handleDateSelect(e.target.value);
-                          }
-                        }}
-                        autoFocus
-                      />
-                      
-                      {selectedDate && (
-                        <div className="mt-3 text-sm text-gray-600 font-medium">
-                          Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}
-                        </div>
-                      )}
-                      
-                      <div className="mt-6 flex justify-between w-full">
-                        <button 
-                          className="px-5 py-2 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300 font-medium"
-                          onClick={() => {
-                            setShowCalendar(false);
-                            setSelectedDate(null);
-                          }}
-                        >
-                          Cancelar
-                        </button>
-                        
-                        <button 
-                          className="px-5 py-2 bg-blue rounded-md cursor-pointer text-white hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed font-medium"
-                          onClick={handleConfirmSend}
-                          disabled={!selectedDate}
-                        >
-                          Guardar
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* El calendario ha sido reemplazado por el PartialShipmentDrawer */}
               </div>
             )}
           </div>
         );
-      }
+      },
+    },
+    {
+      id: "actions",
+      header: "Acciones",
+      cell: ({ row }) => {
+        const data = row.original;
+        return (
+          <div className="flex justify-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1 rounded-full hover:bg-gray-100">
+                  <FiMoreVertical className="h-5 w-5 text-gray-600" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {!data.send && (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      data.id && handleCheckOrder(e, data);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <FaCheck className="mr-2 h-4 w-4" />
+                    <span>Marcar como enviado</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openDeleteDrawer(data);
+                  }}
+                  className="cursor-pointer text-red-600 hover:text-red-700 focus:text-red-700"
+                >
+                  <TiDelete className="mr-2 h-5 w-5" />
+                  <span>Eliminar pedido</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
     },
   ];
 
@@ -296,6 +250,23 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
     setIsOpenModalCheckOrder(false);
   };
 
+  const openDeleteDrawer = (order: Data) => {
+    setOrderToDelete(order);
+    setDeleteDrawerIsOpen(true);
+  };
+
+  const closeDeleteDrawer = () => {
+    setDeleteDrawerIsOpen(false);
+    setOrderToDelete(undefined);
+  };
+
+  const closeShipmentDrawer = () => {
+    setShipmentDrawerIsOpen(false);
+    setOrderToShip(undefined);
+  };
+
+  console.log("ISSS MOBIEL", isMobile);
+
   if (isMobile) {
     return (
       <div className="w-full py-4">
@@ -306,115 +277,107 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
           clientOrder={clientSelected}
           refreshTable={() => {}}
         />
-        
+
         <CheckOrderModal
           closeModal={closeModalCheckOrder}
           modalIsOpen={modalCheckOrderIsOpen}
           refreshTable={() => {}}
           order={undefined}
         />
-        
+
+        <DeleteOrderDrawer
+          isOpen={deleteDrawerIsOpen}
+          onClose={closeDeleteDrawer}
+          order={orderToDelete}
+        />
+
+        <PartialShipmentDrawer
+          isOpen={shipmentDrawerIsOpen}
+          onClose={closeShipmentDrawer}
+          order={orderToShip}
+        />
+
         <ToastContainer />
-        
+
         {/* Lista de tarjetas con espacio entre ellas */}
-        <div className="flex flex-col space-y-4 px-4">
+        <div className="flex flex-col space-y-4">
           {ordersDataProcessed?.data?.map((order: Data) => (
             <div
               key={order.id}
               className="rounded-md border border-gray-200 p-4 space-y-2 shadow-sm bg-white"
             >
-            <div className="flex justify-between items-center">
-              <span className="font-bold">Cliente: {order.client}</span>
-              <div>
-                {order.send ? (
-                  <div className="bg-green-500 rounded-full p-1.5 flex items-center justify-center">
-                    <FaCheck className="text-white" size={14} />
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <TiDelete
-                      onClick={(e) => handleCheckOrder(e, order)}
-                      color="#F44336"
-                      size={24}
-                      className="cursor-pointer"
-                    />
-                    {showCalendar && activeOrderId === order.id && (
-                      <div 
-                        ref={calendarRef}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+              <div className="flex justify-between items-center">
+                <span className="font-bold">Cliente: {order.client}</span>
+                <div className="flex items-center gap-2">
+                  {order.send ? (
+                    <div className="bg-green rounded-full p-1.5 flex items-center justify-center">
+                      <FaCheck className="text-white" size={14} />
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <TiDelete
                         onClick={(e) => {
                           e.stopPropagation();
-                          setActiveOrderId(null);
+                          order.id && handleCheckOrder(e, order);
                         }}
-                      >
-                        <div 
-                          className="bg-white p-6 rounded-lg shadow-lg w-96 max-w-full mx-4"
-                          onClick={(e) => e.stopPropagation()}
+                        color="#F44336"
+                        size={24}
+                        className="cursor-pointer"
+                      />
+                    </div>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="p-1 rounded-full hover:bg-gray-100">
+                        <FiMoreVertical className="h-5 w-5 text-gray-600" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      {!order.send && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            order.id && handleCheckOrder(e, order);
+                          }}
+                          className="cursor-pointer"
                         >
-                          <div className="mb-4 font-medium text-xl text-gray-800">Selecciona fecha de envío:</div>
-                          <input 
-                            type="date" 
-                            className="w-full p-3 border border-gray-300 rounded-md text-base"
-                            value={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''}
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                handleDateSelect(e.target.value);
-                              }
-                            }}
-                            autoFocus
-                          />
-                          
-                          {selectedDate && (
-                            <div className="mt-3 text-sm text-gray-600 font-medium">
-                              Fecha seleccionada: {format(selectedDate, 'dd/MM/yyyy')}
-                            </div>
-                          )}
-                          
-                          <div className="mt-6 flex justify-between w-full">
-                            <button 
-                              className="px-5 py-2 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300 font-medium"
-                              onClick={() => {
-                                setShowCalendar(false);
-                                setSelectedDate(null);
-                              }}
-                            >
-                              Cancelar
-                            </button>
-                            
-                            <button 
-                              className="px-5 py-2 bg-blue cursor-pointer rounded-md text-white hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed font-medium"
-                              onClick={handleConfirmSend}
-                              disabled={!selectedDate}
-                            >
-                              Guardar
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                          <FaCheck className="mr-2 h-4 w-4" />
+                          <span>Marcar como enviado</span>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openDeleteDrawer(order);
+                        }}
+                        className="cursor-pointer text-red-600 hover:text-red-700 focus:text-red-700"
+                      >
+                        <TiDelete className="mr-2 h-5 w-5" />
+                        <span>Eliminar pedido</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
-            </div>
-            <div className="h-px bg-gray-200" />
-            <div className="space-y-2">
-              <p>
-                Fecha creación:{" "}
-                {formatTableDate(order.orderDate)}
-              </p>
-              <p>Fecha entrega: {formatTableDate(order.deliveryDate)}</p>
-              <p>Descuento: {order.discount}%</p>
-              <p>Total: ${order.total}</p>
-              <p>Dirección: {order.address}</p>
-            </div>
-            <div className="text-center mt-2">
-              <button
-                className="text-blue-600 hover:text-blue-800"
-                onClick={() => openDrawerShow(order)}
-              >
-                Ver detalles
-              </button>
-            </div>
+              <div className="h-px bg-gray-200" />
+              <div className="space-y-2">
+                <p>Fecha creación: {formatTableDate(order.orderDate)}</p>
+                <p>Fecha entrega: {formatTableDate(order.deliveryDate)}</p>
+                <p>Descuento: {order.discount ? `${order.discount}%` : "-"}</p>
+                <p>Total: ${order.total}</p>
+                <p>Dirección: {order.address}</p>
+              </div>
+              <div className="text-center mt-2">
+                <button
+                  className="text-blue-600 hover:text-blue-800"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openDrawerShow(order);
+                  }}
+                >
+                  Ver detalles
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -453,6 +416,18 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
         modalIsOpen={modalCheckOrderIsOpen}
         refreshTable={() => {}}
         order={undefined}
+      />
+
+      <DeleteOrderDrawer
+        isOpen={deleteDrawerIsOpen}
+        onClose={closeDeleteDrawer}
+        order={orderToDelete}
+      />
+
+      <PartialShipmentDrawer
+        isOpen={shipmentDrawerIsOpen}
+        onClose={closeShipmentDrawer}
+        order={orderToShip}
       />
 
       <ToastContainer />

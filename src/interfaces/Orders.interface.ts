@@ -51,6 +51,9 @@ export interface IOrderModal {
   count: number;
   price: string;
   unit?: string;
+  shipped?: boolean; // Indica si este producto específico ha sido enviado
+  sent?: boolean;    // Propiedad alternativa para indicar si fue enviado
+  deliveryDate?: string; // Fecha de envío del producto específico
 }
 
 export interface IOrderResponse {
@@ -83,6 +86,9 @@ export interface Order {
   };
   count: number;
   price: string;
+  shipped?: boolean; // Indica si este producto específico ha sido enviado
+  sent?: boolean;    // Propiedad alternativa para indicar si fue enviado
+  deliveryDate?: string; // Fecha de envío del producto específico
 }
 
 export interface CreateOrderPayload {
