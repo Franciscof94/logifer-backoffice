@@ -367,15 +367,16 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                 <p>Total: ${order.total}</p>
                 <p>Dirección: {order.address}</p>
               </div>
-              <div className="text-center mt-2">
+              <div className="text-center mt-3">
                 <button
-                  className="text-blue-600 hover:text-blue-800"
+                  className="px-3 py-1.5 bg-white border border-blue text-blue rounded-md hover:bg-blue hover:text-white transition-colors flex items-center justify-center mx-auto gap-1.5 text-sm font-medium"
                   onClick={(e) => {
                     e.stopPropagation();
                     openDrawerShow(order);
                   }}
                 >
-                  Ver detalles
+                  <MdOutlineRemoveRedEye size={16} />
+                  <span>Detalles del pedido</span>
                 </button>
               </div>
             </div>
