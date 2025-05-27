@@ -362,7 +362,7 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
               <div className="h-px bg-gray-200" />
               <div className="space-y-2">
                 <p>Fecha creación: {formatTableDate(order.orderDate)}</p>
-                <p>Fecha entrega: {formatTableDate(order.deliveryDate)}</p>
+                <p>Fecha entrega: {order.deliveryDate}</p>
                 <p>Descuento: {order.discount ? `${order.discount}%` : "-"}</p>
                 <p>Total: ${order.total}</p>
                 <p>Dirección: {order.address}</p>
