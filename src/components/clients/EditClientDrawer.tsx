@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { IClient } from "../../interfaces/Clients.interface";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -18,6 +18,7 @@ import {
 } from "../ui/sheet";
 import { RootState } from "../../store/store";
 import { X } from "lucide-react";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   isOpen: boolean;
@@ -32,16 +33,8 @@ export const EditClientDrawer: FC<Props> = ({
   client,
   refreshTable,
 }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = useIsMobile(768);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
   const dispatch = useDispatch();
   const methods = useForm<IClient>({
     resolver: yupResolver(ClientSchema),
@@ -139,6 +132,7 @@ export const EditClientDrawer: FC<Props> = ({
                     width="100%"
                     color="grey-50"
                     weight="medium"
+                    type="button"
                     onClick={onClose}
                   />
                 </div>
@@ -151,6 +145,7 @@ export const EditClientDrawer: FC<Props> = ({
                     width="130px"
                     color="grey-50"
                     weight="light"
+                    type="button"
                     onClick={onClose}
                   />
                   <Button

@@ -53,4 +53,10 @@ export const ordersEndpoints = {
     const { data } = await axiosInstance.patch(`/orders/${orderId}/status`);
     return data;
   },
+
+  updateOrderPaymentStatus: async (orderId: string, isPaid: boolean, paymentDate?: string): Promise<void> => {
+    const payload = { isPaid, paymentDate };
+    const { data } = await axiosInstance.patch(`/orders/${orderId}/payment-status`, payload);
+    return data;
+  },
 };

@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useMemo } from "react";
+import { FC, useState, useMemo } from "react";
 import { TiDelete } from "react-icons/ti";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
 import { FaCheck } from "react-icons/fa";
@@ -14,48 +14,78 @@ import { formatTableDate } from "../../utils/dateUtils";
 import { ShowOrderDrawer } from "./ShowOrderDrawer";
 import { DeleteOrderDrawer } from "./DeleteOrderDrawer";
 import { PartialShipmentDrawer } from "./PartialShipmentDrawer";
+import { PaymentStatusDrawer } from "./PaymentStatusDrawer";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   page: number;
   onPageChange: (page: number) => void;
 }
 
+const PaymentStatusCell: FC<{ row: Data; openPaymentDrawer: (order: Data) => void }> = ({ row, openPaymentDrawer }) => {
+  const handleOpenDrawer = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    openPaymentDrawer(row);
+  };
+
+  if (row.isPaid && row.paymentDate) {
+    return (
+      <div 
+        className="flex flex-col items-center cursor-pointer py-1" 
+        onClick={handleOpenDrawer}
+      >
+        <span className="px-2.5  inline-flex text-xs leading-5 font-semibold rounded-full bg-green text-white">
+          Pago
+        </span>
+        <span className="text-xs text-gray-600 mt-1">
+          {formatTableDate(row.paymentDate)}
+        </span>
+      </div>
+    );
+  }
+
+  // Si no está pagado, mostrar el checkbox para iniciar el pago
+  return (
+    <div 
+      className="flex flex-col items-center justify-center h-full" // Asegurar que el div ocupe espacio para ser clickeable
+      onClick={handleOpenDrawer} // Todo el área es clickeable
+    >
+      <div 
+        className="w-5 h-5 flex items-center justify-center cursor-pointer" 
+        // onClick ya está en el div padre, no es necesario aquí si todo el área es clickeable
+      >
+        <input
+          type="checkbox"
+          checked={false} // Siempre desmarcado ya que si está pagado, se muestra el badge
+          readOnly // El clic lo maneja el div contenedor
+          className="cursor-pointer h-4 w-4"
+        />
+      </div>
+    </div>
+  );
+};
+
 export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
   const [drawerShowIsOpen, setIsOpenDrawerShow] = useState(false);
   const [deleteDrawerIsOpen, setDeleteDrawerIsOpen] = useState(false);
   const [shipmentDrawerIsOpen, setShipmentDrawerIsOpen] = useState(false);
+  const [paymentDrawerIsOpen, setPaymentDrawerIsOpen] = useState(false);
   const [modalCheckOrderIsOpen, setIsOpenModalCheckOrder] = useState(false);
   const [clientSelected, setClientSelected] = useState<IClientOrder>();
   const [orderToDelete, setOrderToDelete] = useState<Data>();
   const [orderToShip, setOrderToShip] = useState<Data>();
-  // Usamos una media query real para detectar dispositivos móviles
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    // Usamos matchMedia para una detección más confiable
-    const mediaQuery = window.matchMedia("(max-width: 640px)");
-
-    // Función para actualizar el estado basado en la media query
-    const updateIsMobile = (e: MediaQueryListEvent | MediaQueryList) => {
-      setIsMobile(e.matches);
-    };
-
-    // Verificar inmediatamente
-    updateIsMobile(mediaQuery);
-
-    // Agregar listener para cambios
-    const listener = (e: MediaQueryListEvent) => updateIsMobile(e);
-    mediaQuery.addEventListener("change", listener);
-
-    // Limpiar
-    return () => mediaQuery.removeEventListener("change", listener);
-  }, []);
+  const [orderToPay, setOrderToPay] = useState<Data>();
+  const isMobile = useIsMobile();
+  
+  const queryClient = useQueryClient();
 
   const { data: ordersData, isLoading } = useOrders(page);
   const ordersDataProcessed = useMemo(() => {
@@ -115,8 +145,8 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
               />
             </div>
             <span>
-              {data.order[0]?.product?.name}{" "}
-              {data.order.length > 1 ? `(+${data.order.length - 1})` : ""}
+              {data.order?.[0]?.product?.name}{" "}
+              {data.order?.length > 1 ? `(+${data.order.length - 1})` : ""}
             </span>
           </div>
         );
@@ -194,6 +224,11 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
       },
     },
     {
+      id: "paymentStatus",
+      header: "Estado de Pago",
+      cell: ({ row }) => <PaymentStatusCell row={row.original} openPaymentDrawer={openPaymentDrawer} />,
+    },
+    {
       id: "actions",
       header: "Acciones",
       cell: ({ row }) => {
@@ -219,6 +254,16 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                     <span>Marcar como enviado</span>
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openPaymentDrawer(data);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <FaCheck className="mr-2 h-4 w-4" />
+                  <span>{data.isPaid ? "Editar pago" : "Registrar pago"}</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
@@ -265,6 +310,23 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
     setOrderToShip(undefined);
   };
 
+  const openPaymentDrawer = (order: Data) => {
+    // Cerrar cualquier otro drawer o modal que pudiera estar abierto
+    setIsOpenDrawerShow(false);
+    setDeleteDrawerIsOpen(false);
+    setShipmentDrawerIsOpen(false);
+    setIsOpenModalCheckOrder(false);
+    
+    // Ahora abrimos el drawer de pago
+    setOrderToPay(order);
+    setPaymentDrawerIsOpen(true);
+  };
+
+  const closePaymentDrawer = () => {
+    setPaymentDrawerIsOpen(false);
+    setOrderToPay(undefined);
+  };
+
   console.log("ISSS MOBIEL", isMobile);
 
   if (isMobile) {
@@ -295,6 +357,13 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
           isOpen={shipmentDrawerIsOpen}
           onClose={closeShipmentDrawer}
           order={orderToShip}
+        />
+
+        <PaymentStatusDrawer
+          isOpen={paymentDrawerIsOpen}
+          onClose={closePaymentDrawer}
+          order={orderToPay}
+          refreshTable={() => queryClient.invalidateQueries({ queryKey: ['orders'] })}
         />
 
         <ToastContainer />
@@ -348,6 +417,16 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
+                          openPaymentDrawer(order);
+                        }}
+                        className="cursor-pointer"
+                      >
+                        <FaCheck className="mr-2 h-4 w-4" />
+                        <span>{order.isPaid ? "Editar pago" : "Registrar pago"}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
                           openDeleteDrawer(order);
                         }}
                         className="cursor-pointer text-red-600 hover:text-red-700 focus:text-red-700"
@@ -366,6 +445,37 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                 <p>Descuento: {order.discount ? `${order.discount}%` : "-"}</p>
                 <p>Total: ${order.total}</p>
                 <p>Dirección: {order.address}</p>
+                
+                {/* Payment status indicator */}
+                <div className="flex items-center">
+                  <p className="mr-2 text-gray-700">Estado de pago:</p>
+                  {order.isPaid && order.paymentDate ? (
+                    <div className="flex items-center">
+                      <div className="px-4 py-1 text-sm font-medium rounded-full bg-green text-white">
+                        Pago
+                      </div>
+                      <div className="ml-2 text-sm text-gray-600">
+                        {formatTableDate(order.paymentDate)}
+                      </div>
+                    </div>
+                  ) : (
+                    <div 
+                      className="flex items-center gap-1 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openPaymentDrawer(order);
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={false}
+                        readOnly
+                        className="cursor-pointer h-4 w-4"
+                      />
+                      <span className="text-sm text-gray-600">Pendiente</span>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="text-center mt-3">
                 <button
@@ -429,6 +539,13 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
         isOpen={shipmentDrawerIsOpen}
         onClose={closeShipmentDrawer}
         order={orderToShip}
+      />
+
+      <PaymentStatusDrawer
+        isOpen={paymentDrawerIsOpen}
+        onClose={closePaymentDrawer}
+        order={orderToPay}
+        refreshTable={() => queryClient.invalidateQueries({ queryKey: ['orders'] })}
       />
 
       <ToastContainer />

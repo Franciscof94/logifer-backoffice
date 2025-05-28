@@ -8,7 +8,7 @@ interface Props {
   height: string;
   weight: string;
   onClick?: (e?: React.MouseEvent<HTMLButtonElement> | undefined) => void;
-  type?: "submit";
+  type?: "submit" | "button";
   disabled?: boolean;
   className?: string;
   isLoading?: boolean;

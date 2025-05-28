@@ -8,47 +8,56 @@ import { login } from "../store/slices/authSlice";
  */
 export async function refreshToken(): Promise<string | null> {
   try {
-    // Obtiene el refreshToken del estado de Redux
     const state = store.getState();
-    const auth = state.authData?.auth;
-    const refreshToken = auth?.refreshToken;
+    const currentAuthData = state.authData?.auth;
+    const currentRefreshToken = currentAuthData?.refreshToken;
 
-    if (!refreshToken) {
+    if (!currentRefreshToken) {
       console.error('No refresh token found in store');
       return null;
     }
 
-    // Crea una instancia de axios independiente para evitar ciclos infinitos
-    // con los interceptores de la instancia principal
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/refresh`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${refreshToken}`,
+        'Authorization': `Bearer ${currentRefreshToken}`,
         'Content-Type': 'application/json'
       }
     });
 
     if (!response.ok) {
-      console.error('Error refreshing token:', response.statusText);
-      // Limpia los tokens y la autenticación
-      Cookies.remove("token");
-      store.dispatch(login({}));
+      console.error('Error refreshing token:', response.status, response.statusText);
+      // Si el refresh token es inválido (e.g., 401, 403), desloguear
+      if (response.status === 401 || response.status === 403) {
+        Cookies.remove("token"); // Access token
+        Cookies.remove("refreshToken"); // Si también lo guardas en cookies
+        store.dispatch(login({})); // Limpiar estado de auth en Redux
+        // Opcionalmente redirigir al login si no lo hace ya el interceptor
+        // window.location.href = "/ingresar"; 
+      }
       return null;
     }
 
     const data = await response.json();
     
-    if (data.accessToken || data.access_token) {
-      const newAccessToken = data.accessToken || data.access_token;
-      
-      // Actualiza la cookie
+    const newAccessToken = data.accessToken || data.access_token;
+    const newRefreshToken = data.refreshToken || data.refresh_token; // Para rotación de tokens
+
+    if (newAccessToken) {
       Cookies.set("token", newAccessToken, { expires: 7 });
       
-      // Actualiza el estado de Redux
-      store.dispatch(login({
-        ...auth,
-        accessToken: newAccessToken
-      }));
+      const authPayloadForLogin = {
+        ...(currentAuthData || {}),
+        accessToken: newAccessToken,
+      };
+
+      if (newRefreshToken) {
+        authPayloadForLogin.refreshToken = newRefreshToken;
+        // Si guardas el refresh token en cookies, actualízalo también:
+        // Cookies.set("refreshToken", newRefreshToken, { expires: 30, secure: true, httpOnly: false/true });
+      }
+      
+      store.dispatch(login(authPayloadForLogin));
       
       console.log('Token refreshed successfully');
       return newAccessToken;
@@ -58,6 +67,9 @@ export async function refreshToken(): Promise<string | null> {
     }
   } catch (error) {
     console.error('Network or other error during token refresh:', error);
+    // Podrías querer desloguear aquí también en caso de error de red completo
+    // Cookies.remove("token");
+    // store.dispatch(login({}));
     return null;
   }
 }

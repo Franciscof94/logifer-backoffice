@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { IProduct } from "../../interfaces";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -18,6 +18,7 @@ import {
 } from "../ui/sheet";
 import { RootState } from "../../store/store";
 import { X } from "lucide-react";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   isOpen: boolean;
@@ -32,7 +33,7 @@ export const EditProductDrawer: FC<Props> = ({
   product,
   refreshTable,
 }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = useIsMobile(768);
   const dispatch = useDispatch();
   const methods = useForm<IProduct>({
     resolver: yupResolver(ProductSchema),
@@ -45,15 +46,6 @@ export const EditProductDrawer: FC<Props> = ({
     setValue,
     formState: { isValid },
   } = methods;
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   useEffect(() => {
     if (isOpen && product) {
@@ -141,6 +133,7 @@ export const EditProductDrawer: FC<Props> = ({
                     color="grey-50"
                     weight="medium"
                     disabled={isLoadingButton}
+                    type="button"
                     onClick={onClose}
                   />
                 </div>
@@ -154,6 +147,7 @@ export const EditProductDrawer: FC<Props> = ({
                     color="grey-50"
                     weight="light"
                     disabled={isLoadingButton}
+                    type="button"
                     onClick={onClose}
                   />
                   <Button

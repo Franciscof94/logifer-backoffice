@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { useFormContext } from "react-hook-form";
 import { CustomSheet } from "../customs/CustomSheet";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   open: boolean;
@@ -13,16 +14,7 @@ export const DiscountSheet = ({ open, setOpen }: Props) => {
   const { setValue, watch } = useFormContext();
   const currentDiscount = watch("discount") || 0;
   const [discount, setDiscount] = useState<string>(currentDiscount.toString());
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isMobile = useIsMobile(768);
 
   const handleApply = () => {
     const numericValue = discount === "" ? 0 : parseFloat(discount);

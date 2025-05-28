@@ -72,7 +72,7 @@ export const formatDate = (dateStr: string | null | undefined, format: string = 
  * @returns Formatted date string for table display
  */
 export const formatTableDate = (dateStr: string | null | undefined): string => {
-  return formatDate(dateStr, 'DD/MM/YYYY HH:mm');
+  return formatDate(dateStr, 'DD/MM/YYYY');
 };
 
 /**

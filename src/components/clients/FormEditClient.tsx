@@ -1,23 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { InputText } from "../customs/InputText";
-
 import { useFormContext } from "react-hook-form";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 export const FormEditClient = () => {
   // Get form methods from context - register is used by InputText components
   useFormContext();
   // Note: The InputText component internally uses register from useFormContext
   // We don't need to explicitly use register here as it's handled by InputText
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = useIsMobile(768);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
   return (
     <div className={`${isMobile ? "px-4" : "px-16"} mt-3 mb-5`}>
       <div

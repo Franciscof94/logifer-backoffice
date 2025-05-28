@@ -75,6 +75,8 @@ export interface Data {
   address: string;
   order: Order[];
   createdBy?: string;
+  isPaid: boolean;
+  paymentDate?: string;
 }
 
 export interface Order {
