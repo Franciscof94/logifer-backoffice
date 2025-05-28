@@ -2,13 +2,14 @@ import { useDispatch, useSelector } from "react-redux";
 import Cookies from "js-cookie";
 import { jwtDecode, JwtPayload } from "jwt-decode";
 import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { RootState } from "@/store/store";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 import { Logo } from "../assets";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { setShowNavbar } from "../store/slices/navbarSlice";
 import { login } from "../store/slices/authSlice";
-import { useEffect, useState } from "react";
-import { RootState } from "@/store/store";
 
 interface CustomJwtPayload extends JwtPayload {
   email?: string;
@@ -41,16 +42,7 @@ export const Header = () => {
   const auth = useSelector((state: RootState) => state.authData.auth);
   const { isOpen } = useSelector((state: RootState) => state.navbarData);
   const isLogged = auth?.user;
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isMobile = useIsMobile(768);
 
   useEffect(() => {
     try {

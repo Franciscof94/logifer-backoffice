@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, useState, useEffect } from "react";
+import { ChangeEvent, FC, useState } from "react";
 import Modal from "react-modal";
 import { FaTimes } from "react-icons/fa";
 import { Button } from "../customs/Button";
@@ -10,6 +10,7 @@ import { InputText } from "../customs/InputText";
 import { setLoadingButton } from "../../store/slices/uiSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   modalIsOpen: boolean;
@@ -27,17 +28,7 @@ export const CheckOrderModal: FC<Props> = ({
   const dispatch = useDispatch();
   const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
   const [deliveryDate, setDeliveryDate] = useState("");
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile(768);
 
   const customStyles = {
     content: {

@@ -1,21 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "../components/customs/Button";
 import { ProductsReports } from "../components/reports/ProductsReports";
 import { SalesReports } from "../components/reports/SalesReports";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export const Reports = () => {
   const [reportIs, setReportIs] = useState<"sales" | "products">("sales");
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = useIsMobile(768);
   
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   return (
     <div>
       <div className="flex justify-center items-center px-4 sm:px-0">

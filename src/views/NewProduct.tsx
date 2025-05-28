@@ -3,7 +3,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { IProduct } from "../interfaces";
 import { ProductSchema } from "../validationSchemas";
-import { useState, useEffect } from "react";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export const NewProduct = () => {
   const methods = useForm<IProduct>({
@@ -11,16 +11,7 @@ export const NewProduct = () => {
     mode: "onChange",
   });
   
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile(768);
 
   return (
     <FormProvider {...methods}>

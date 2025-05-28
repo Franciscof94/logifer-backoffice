@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react";
+import { FC } from "react";
 import { IClient } from "../../interfaces";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
@@ -11,6 +11,7 @@ import {
   SheetFooter,
 } from "../ui/sheet";
 import { X } from "lucide-react";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   isOpen: boolean;
@@ -25,17 +26,8 @@ export const DeleteClientDrawer: FC<Props> = ({
   client,
   handleDelete,
 }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = useIsMobile(768);
   const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>

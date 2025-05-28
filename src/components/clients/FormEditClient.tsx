@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { InputText } from "../customs/InputText";
 import { useFormContext } from "react-hook-form";
 import { useIsMobile } from "../../hooks/useIsMobile";

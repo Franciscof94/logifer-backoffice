@@ -10,6 +10,7 @@ import { setLoadingOrdersTable } from "../store/slices/ordersSlice";
 import { setLoadingButton } from "../store/slices/uiSlice";
 import { ToastContainer } from "react-toastify";
 import { Pagination } from "../components/pagination/Pagination";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export const Products = () => {
   const dispatch = useDispatch();
@@ -18,6 +19,7 @@ export const Products = () => {
   const [products, setProducts] = useState<IProduct[] | undefined>();
   const [pagination, setPagination] = useState<IPagination>();
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const isMobile = useIsMobile(768);
 
   const { filtersProducts: filters } = useSelector(
     (state: { filtersData: { filtersProducts: Record<string, string> } }) => state.filtersData
@@ -71,17 +73,6 @@ export const Products = () => {
     (state: { ordersData: { loadingOrdersTable: boolean } }) => state.ordersData.loadingOrdersTable
   );
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
   return (
     <FormProvider {...methods}>
       <div className="pt-8 pb-12"> {/* Added top and bottom padding */}

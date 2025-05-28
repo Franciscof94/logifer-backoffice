@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setShowNavbar } from "../store/slices/navbarSlice";
@@ -16,6 +15,7 @@ import {
 } from "./ui/sheet";
 import { cn } from "../lib/utils";
 import { RootState } from "@/store/store";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const links = [
   {
@@ -59,16 +59,7 @@ export const Sidebar = () => {
   const { pathname } = useLocation();
   const { isOpen } = useSelector((state: RootState) => state.navbarData);
   const dispatch = useDispatch();
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile(768);
 
   const handleLogout = () => {
     dispatch(logout());

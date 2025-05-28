@@ -26,6 +26,7 @@ import { useCreateOrder } from "../hooks/mutations/useCreateOrder";
 import { RootState } from "../store/store";
 import { Card, CardContent } from "../components/ui/card";
 import { DiscountSheet } from "../components/orders/DiscountSheet";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export const NewOrder = () => {
   const dispatch = useDispatch();
@@ -37,17 +38,8 @@ export const NewOrder = () => {
 
   const [newOrders, setNewOrders] = useState<IOrderTable[]>([]);
   const [discountSheetOpen, setDiscountSheetOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = useIsMobile(768);
   
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const {
     data: clientsResponse = {
       data: [],

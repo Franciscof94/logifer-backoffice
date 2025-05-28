@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { FaAngleRight, FaChartBar } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,6 +10,7 @@ import { FaFileCirclePlus, FaFileLines } from "react-icons/fa6";
 import { BsFillPatchPlusFill } from "react-icons/bs";
 import { SiBuffer } from "react-icons/si";
 import { RootState } from "@/store/store";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const links = [
   {
@@ -52,23 +53,14 @@ const links = [
 export const Navbar = () => {
   const { pathname } = useLocation();
   const { isOpen } = useSelector((state: RootState) => state.navbarData);
-  const navbarRef = useRef<any>(null);
+  const navbarRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const isMobile = useIsMobile(768);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: any) => {
-      if (navbarRef.current && !navbarRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (navbarRef.current && !navbarRef.current.contains(event.target as Node)) {
         dispatch(setShowNavbar(false));
       }
     };

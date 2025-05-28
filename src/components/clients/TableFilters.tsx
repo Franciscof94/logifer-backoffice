@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { SubmitHandler, UseFormReturn } from "react-hook-form";
 import { IClient, IClientsFilter } from "../../interfaces";
 import { setFiltersClient } from "../../store/slices/filtersSlice";
@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { InputText } from "../customs/InputText";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   methods: UseFormReturn<IClient>;
@@ -15,16 +16,7 @@ interface Props {
 export const TableFilters: FC<Props> = ({ methods }) => {
   const { handleSubmit, reset } = methods;
   const dispatch = useDispatch();
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile(768);
 
   const onSubmit: SubmitHandler<IClient> = (data) => {
     const newObj: IClientsFilter = {
