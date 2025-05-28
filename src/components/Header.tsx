@@ -106,7 +106,7 @@ export const Header = () => {
           <img
             src={Logo}
             className={`${isMobile ? "w-[40px]" : "w-[60px]"}`}
-            alt="logo-logifer"
+            alt="logo-ferraro-materiales"
           />
           {isLogged && (
             <h1

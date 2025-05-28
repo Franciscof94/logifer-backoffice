@@ -20,7 +20,7 @@ export const Home = () => {
     <div>
       <div className="flex flex-col justify-center items-center p-4">
         <h1 className={`text-center ${isMobile ? 'py-8 text-3xl' : 'py-14 text-5xl'} font-semibold`}>
-          Bienvenido al backoffice de Logifer
+          Bienvenido al backoffice de Ferraro Materiales
         </h1>
         <div className={`${isMobile ? 'w-full' : ''}`}>
           <Link to="/nuevo-pedido" className={`${isMobile ? 'w-full block' : ''}`}>
@@ -52,6 +52,18 @@ export const Home = () => {
               color="blue"
               height="40px"
               legend="Crear nuevo producto"
+              size={isMobile ? "lg" : "xl"}
+              weight=""
+              width={isMobile ? "100%" : "250px"}
+            />
+          </Link>
+        </div>
+        <div className={`${isMobile ? 'py-4 w-full' : 'py-8'}`}>
+          <Link to="/pedidos" className={`${isMobile ? 'w-full block' : ''}`}>
+            <Button
+              color="blue"
+              height="40px"
+              legend="Ver pedidos"
               size={isMobile ? "lg" : "xl"}
               weight=""
               width={isMobile ? "100%" : "250px"}
