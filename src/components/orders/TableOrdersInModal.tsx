@@ -116,7 +116,9 @@ export const TableOrdersInModal: FC<Props> = ({
       const roundedCount = Math.round(newCount * 100) / 100;
       setOrdersTable((prevState: IOrderModal[] | undefined) => {
         return prevState?.map((item) => {
-          if (item.id === row.id) {
+          // Comprobación más específica para identificar exactamente el producto correcto
+          // Comparamos tanto el ID del pedido como el ID del producto
+          if (item.id === row.id && item.product.id === row.product.id) {
             return {
               ...item,
               count: roundedCount,
@@ -131,6 +133,9 @@ export const TableOrdersInModal: FC<Props> = ({
         orderId: row.id,
         productId: row.product.id,
         count: roundedCount,
+        // Agregamos información sobre la operación realizada
+        operation: increment ? 'increment' : 'decrement',
+        amount: incrementAmount,
       });
 
       await refreshTable();

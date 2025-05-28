@@ -88,6 +88,8 @@ const OrdersService = {
     orderId: string | undefined;
     productId: string | undefined;
     count: number | undefined | null;
+    operation?: 'increment' | 'decrement';
+    amount?: number;
   }) => {
     let count = order.count;
     
@@ -95,17 +97,25 @@ const OrdersService = {
       count = Math.round(count * 100) / 100;
     }
     
-    console.log('Enviando actualización de cantidad al servidor:', {
-      order_id: order.orderId,
-      product_id: order.productId,
-      count: count
-    });
-    
-    await axiosInstance.put(`/orders/edit-product-count`, {
+    // Preparamos el payload con la información de la operación
+    const payload: any = {
       order_id: order.orderId,
       product_id: order.productId,
       count: count,
-    });
+    };
+    
+    // Si se proporciona la operación y la cantidad, los incluimos en el payload
+    if (order.operation) {
+      payload.operation = order.operation;
+    }
+    
+    if (order.amount) {
+      payload.amount = Math.round(order.amount * 100) / 100;
+    }
+    
+    console.log('Enviando actualización de cantidad al servidor:', payload);
+    
+    await axiosInstance.put(`/orders/edit-product-count`, payload);
   },
 
   deleteOrder: async (orderId: string | undefined) => {
