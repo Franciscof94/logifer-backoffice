@@ -1,9 +1,9 @@
+import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "../customs/Button";
 import { CustomSelect } from "../customs/CustomSelect";
 import { InputText } from "../customs/InputText";
 import { SubmitHandler, UseFormReturn } from "react-hook-form";
-import { FC, useEffect } from "react";
 import { IOrder } from "../../interfaces";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";

@@ -59,9 +59,13 @@ export const EditProductModal: FC<Props> = ({
       toast.success("Producto editado exitosamente!");
       refreshTable();
       closeModal();
-    } catch (error: any) {
+    } catch (error: unknown) {
       dispatch(setLoadingButton(false));
-      toast.error(error.message);
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Error al editar el producto");
+      }
     }
   };
 
