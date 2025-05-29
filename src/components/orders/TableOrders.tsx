@@ -1,7 +1,7 @@
 import { FC, useState, useMemo } from "react";
 import { TiDelete } from "react-icons/ti";
 import { MdOutlineRemoveRedEye } from "react-icons/md";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaTruck, FaMoneyBillWave, FaTrash } from "react-icons/fa";
 import { FiMoreVertical } from "react-icons/fi";
 import { ToastContainer } from "react-toastify";
 import { Pagination } from "../pagination/Pagination";
@@ -241,7 +241,7 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                   <FiMoreVertical className="h-5 w-5 text-gray-600" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-56">
                 {!data.send && (
                   <DropdownMenuItem
                     onClick={(e) => {
@@ -250,7 +250,7 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                     }}
                     className="cursor-pointer"
                   >
-                    <FaCheck className="mr-2 h-4 w-4" />
+                    <FaTruck className="mr-2 h-4 w-4" />
                     <span>Marcar como enviado</span>
                   </DropdownMenuItem>
                 )}
@@ -261,7 +261,7 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                   }}
                   className="cursor-pointer"
                 >
-                  <FaCheck className="mr-2 h-4 w-4" />
+                  <FaMoneyBillWave className="mr-2 h-4 w-4" />
                   <span>{data.isPaid ? "Editar pago" : "Registrar pago"}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -271,7 +271,7 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                   }}
                   className="cursor-pointer text-red-600 hover:text-red-700 focus:text-red-700"
                 >
-                  <TiDelete className="mr-2 h-5 w-5" />
+                  <FaTrash className="mr-2 h-4 w-4" />
                   <span>Eliminar pedido</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -401,7 +401,7 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                         <FiMoreVertical className="h-5 w-5 text-gray-600" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuContent align="end" className="w-56">
                       {!order.send && (
                         <DropdownMenuItem
                           onClick={(e) => {
@@ -410,7 +410,7 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                           }}
                           className="cursor-pointer"
                         >
-                          <FaCheck className="mr-2 h-4 w-4" />
+                          <FaTruck className="mr-2 h-4 w-4" />
                           <span>Marcar como enviado</span>
                         </DropdownMenuItem>
                       )}
@@ -421,7 +421,7 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                         }}
                         className="cursor-pointer"
                       >
-                        <FaCheck className="mr-2 h-4 w-4" />
+                        <FaMoneyBillWave className="mr-2 h-4 w-4" />
                         <span>{order.isPaid ? "Editar pago" : "Registrar pago"}</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
@@ -431,7 +431,7 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
                         }}
                         className="cursor-pointer text-red-600 hover:text-red-700 focus:text-red-700"
                       >
-                        <TiDelete className="mr-2 h-5 w-5" />
+                        <FaTrash className="mr-2 h-4 w-4" />
                         <span>Eliminar pedido</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
