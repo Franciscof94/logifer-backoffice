@@ -492,6 +492,18 @@ export const TableOrders: FC<Props> = ({ page, onPageChange }) => {
             </div>
           ))}
         </div>
+        
+        {/* Add pagination for mobile view */}
+        {ordersDataProcessed && ordersDataProcessed.totalElements > 0 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              currentPage={page}
+              onChangePage={onPageChange}
+              totalItems={ordersDataProcessed?.totalElements ?? 0}
+              filasPorPaginas={ordersDataProcessed?.size}
+            />
+          </div>
+        )}
       </div>
     );
   }

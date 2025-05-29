@@ -3,7 +3,7 @@ import { Button } from "../customs/Button";
 import { CustomSelect } from "../customs/CustomSelect";
 import { InputText } from "../customs/InputText";
 import { SubmitHandler, UseFormReturn } from "react-hook-form";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect } from "react";
 import { IOrder } from "../../interfaces";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
@@ -12,6 +12,7 @@ import {
   IProductOption,
   IUnitTypeOption,
 } from "../../interfaces/SelectOptions.interface";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   methods: UseFormReturn<IOrder>;
@@ -52,16 +53,7 @@ export const FormNewOrder: FC<Props> = ({
     ({ address: _, ...clientWithoutAddress }) => clientWithoutAddress
   );
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isMobile = useIsMobile(768);
 
   const product = watch("product");
   const client = watch("client");

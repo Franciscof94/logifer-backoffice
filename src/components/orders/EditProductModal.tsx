@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { setLoadingButton } from "../../store/slices/uiSlice";
 import { CustomSheet } from "../customs/CustomSheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   modalIsOpen: boolean;
@@ -26,16 +27,7 @@ export const EditProductModal = ({
 }: Props) => {
   const dispatch = useDispatch();
   const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isMobile = useIsMobile(768);
 
   const handleEditProduct = async () => {
     dispatch(setLoadingButton(true));

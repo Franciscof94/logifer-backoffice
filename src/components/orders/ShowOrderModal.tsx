@@ -1,9 +1,10 @@
-import { FC, useState, useEffect } from "react";
+import { FC } from "react";
 import Modal from "react-modal";
 import { FaTimes } from "react-icons/fa";
 import { Button } from "../customs/Button";
 import { TableOrdersInModal } from "./TableOrdersInModal";
 import { IClientOrder } from "../../interfaces";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   modalIsOpen: boolean;
@@ -18,16 +19,7 @@ export const ShowOrderModal: FC<Props> = ({
   clientOrder,
   refreshTable,
 }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const isMobile = useIsMobile(768);
 
   const customStyles = {
     content: {
