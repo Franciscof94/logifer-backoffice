@@ -152,7 +152,7 @@ export const TableClients: FC<Props> = ({
 
   return (
     <div>
-      <div className="max-h-[380px]">
+      <div className="max-h-[380px] overflow-y-auto">
         <DataTable
           columns={columns}
           data={localClients.length > 0 ? localClients : clients}

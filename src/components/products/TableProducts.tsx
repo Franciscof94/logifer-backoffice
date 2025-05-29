@@ -148,7 +148,7 @@ export const TableProducts: FC<Props> = ({
 
   return (
     <div>
-      <div className="max-h-[380px]">
+      <div className="max-h-[380px] overflow-y-auto">
         <DataTable
           columns={columns}
           data={localProducts.length > 0 ? localProducts : productsData}
