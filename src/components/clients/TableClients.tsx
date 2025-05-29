@@ -11,6 +11,7 @@ import { DeleteClientDrawer } from "./DeleteClientDrawer";
 import { MoreVertical, Edit, Trash2 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { setLoadingButton } from "../../store/slices/uiSlice";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +30,7 @@ export const TableClients: FC<Props> = ({
 }) => {
   const { data, isLoading, refetch } = useClients(page, 9);
   const dispatch = useDispatch();
+  const isMobile = useIsMobile(768);
   
   const [localClients, setLocalClients] = useState<IClient[]>([]);
   
@@ -159,7 +161,7 @@ export const TableClients: FC<Props> = ({
         />
       </div>
 
-      <div className="mt-4 flex justify-end">
+      <div className={`mt-4 ${isMobile ? 'flex justify-center w-full' : 'flex justify-end'}`}>
         <Pagination
           currentPage={pagination?.page ?? 0}
           onChangePage={(newPage) => onPageChange(newPage)}

@@ -95,7 +95,7 @@ export const Products = () => {
               loadingTableOrders={loadingTableOrders}
             />
             {pagination && (
-              <div className="mt-4 flex justify-end">
+              <div className={`mt-4 ${isMobile ? 'flex justify-center w-full' : 'flex justify-end'}`}>
                 <Pagination
                   currentPage={currentPage}
                   onChangePage={handlePageChange}

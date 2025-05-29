@@ -26,3 +26,33 @@
 .visually-hidden {
     display: none;
 }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .pagination {
+        justify-content: center;
+        width: 100%;
+        overflow-x: auto;
+        padding: 0 4px;
+    }
+    
+    .page-item .page-link {
+        font-size: 14px;
+        padding: 7px 8px;
+        height: 40px;
+        line-height: 26px;
+    }
+    
+    .pagination-mobile {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 240px;
+        margin: 0 auto;
+    }
+    
+    .pagination-mobile .page-item .page-link {
+        min-width: 60px;
+        text-align: center;
+    }
+}

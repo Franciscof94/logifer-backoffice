@@ -1,6 +1,6 @@
 import BPagination from "react-bootstrap/Pagination";
 import "./pagination.css";
-
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface Props {
   totalItems: number;
@@ -16,7 +16,34 @@ export const Pagination = ({
   onChangePage,
 }: Props) => {
   const ultimaPagina = Math.ceil(totalItems / filasPorPaginas);
+  const isMobile = useIsMobile(768);
 
+  // Simplified pagination for mobile
+  if (isMobile) {
+    return (
+      <BPagination className="pagination-mobile">
+        {currentPage > 1 && (
+          <BPagination.Item
+            onClick={() => onChangePage(currentPage - 1)}
+          >
+            Anterior
+          </BPagination.Item>
+        )}
+        
+        <BPagination.Item active>{currentPage}</BPagination.Item>
+        
+        {currentPage < ultimaPagina && (
+          <BPagination.Item
+            onClick={() => onChangePage(currentPage + 1)}
+          >
+            Siguiente
+          </BPagination.Item>
+        )}
+      </BPagination>
+    );
+  }
+
+  // Desktop pagination with more options
   return (
     <BPagination>
       {currentPage > 1 && (
@@ -57,7 +84,6 @@ export const Pagination = ({
             currentPage < ultimaPagina && onChangePage(currentPage + 1)
           }
         >
-          {" "}
           Siguiente
         </BPagination.Item>
       )}
