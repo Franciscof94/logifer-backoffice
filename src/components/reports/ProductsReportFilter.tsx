@@ -3,6 +3,7 @@ import { FC, useEffect, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { IProductsReportFilter } from "../../interfaces/SalesReport.interface";
 import { useProductOptions } from "../../hooks/queries/useProductOptions";
+import { IProductOption } from "../../interfaces/SelectOptions.interface";
 
 interface Props {
   methods: UseFormReturn<IProductsReportFilter>;
@@ -13,7 +14,7 @@ export const ProductsReportFilter: FC<Props> = ({ methods }) => {
   const productValue = watch("productReport");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  const { data: productsOptions = [] } = useProductOptions();
+  const { data: productsOptions = { items: [], meta: {} } } = useProductOptions();
   
   useEffect(() => {
     const handleResize = () => {
@@ -71,7 +72,7 @@ export const ProductsReportFilter: FC<Props> = ({ methods }) => {
         </label>
         <CustomSelect
           name="productReport"
-          options={productsOptions.map((product) => ({
+          options={productsOptions.items.map((product: IProductOption) => ({
             value: product.id,
             label: product.productName ?? '',
           }))}

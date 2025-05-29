@@ -66,7 +66,7 @@ export const useClients = (page: number, size: number = 9) => {
     refetchOnWindowFocus: false,
     retry: false,
     enabled: !!page && !!size,
-    gcTime: 0,
-    staleTime: 0,
+    // gcTime: 0, // Remove or set to a higher value e.g., 1000 * 60 * 5 (5 minutes)
+    staleTime: 1000 * 60 * 1 // Example: Data is fresh for 1 minute
   });
 };

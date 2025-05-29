@@ -1,87 +1,41 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { TableFilters } from "../components/products/TableFilters";
 import { TableProducts } from "../components/products/TableProducts";
-import { IProduct } from "../interfaces";
 import { FormProvider, useForm } from "react-hook-form";
-import { IPagination } from "../interfaces/Pagination.interface";
-import { useDispatch, useSelector } from "react-redux";
-import ProductsService from "../services/products/productsService";
-import { setLoadingOrdersTable } from "../store/slices/ordersSlice";
-import { setLoadingButton } from "../store/slices/uiSlice";
 import { ToastContainer } from "react-toastify";
 import { Pagination } from "../components/pagination/Pagination";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useProducts } from "../hooks/queries/useProducts";
+import { IProduct } from "../interfaces";
 
 export const Products = () => {
-  const dispatch = useDispatch();
   const methods = useForm<IProduct>();
-
-  const [products, setProducts] = useState<IProduct[] | undefined>();
-  const [pagination, setPagination] = useState<IPagination>();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const isMobile = useIsMobile(768);
 
-  const { filtersProducts: filters } = useSelector(
-    (state: { filtersData: { filtersProducts: Record<string, string> } }) => state.filtersData
-  );
+  // Use the custom hook for products
+  const { 
+    data: productsData, 
+    isLoading: isLoadingProducts,
+  } = useProducts(currentPage);
 
-  const fetchProducts = useCallback(
-    async (page: number = 1, size: number = 9) => {
-      try {
-        const filteredFilters = Object.keys(filters).reduce<Record<string, string>>(
-          (acc, key) => {
-            const value = filters[key];
-            if (value !== "") {
-              acc[key] = value;
-            }
-            return acc;
-          },
-          {}
-        );
-        dispatch(setLoadingOrdersTable(true));
-        dispatch(setLoadingButton(true));
+  // Derived states from productsData
+  const products = productsData?.data || [];
+  const pagination = productsData;
 
-        const { data, ...pagination } = await ProductsService.getProducts({
-          page,
-          size,
-          filters: filteredFilters,
-        });
-        dispatch(setLoadingOrdersTable(false));
-        dispatch(setLoadingButton(false));
-        console.log('Fetched products:', data);
-        console.log('Pagination:', pagination);
-        setProducts(data);
-        setPagination(pagination);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        dispatch(setLoadingOrdersTable(false));
-        dispatch(setLoadingButton(false));
-      }
-    },
-    [filters, dispatch]
-  );
-
-  useEffect(() => {
-    fetchProducts(currentPage);
-  }, [fetchProducts, filters, currentPage]);
-  
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-  
-  const loadingTableOrders = useSelector(
-    (state: { ordersData: { loadingOrdersTable: boolean } }) => state.ordersData.loadingOrdersTable
-  );
 
   return (
     <FormProvider {...methods}>
-      <div className="pt-8 pb-12"> {/* Added top and bottom padding */}
-        <div className="flex justify-center items-center mb-8"> {/* Added margin bottom */}
+      <div className="pt-8 pb-12">
+        <div className="flex justify-center items-center mb-8">
           <div className={`w-full ${isMobile ? 'px-4' : 'max-w-[1300px]'} m-auto`}>
             <TableFilters methods={methods} />
           </div>
         </div>
-        <div className="flex justify-center items-center mt-8 mb-6"> {/* Adjusted margins */}
+        <div className="flex justify-center items-center mt-8 mb-6">
           <div className={`w-full ${isMobile ? 'px-4' : 'max-w-[1300px]'} m-auto`}>
             <h2 className={`font-normal ${isMobile ? 'text-2xl' : 'text-3xl'}`}>Todos los productos</h2>
           </div>
@@ -89,12 +43,12 @@ export const Products = () => {
         <div className="flex justify-center items-center">
           <div className={`w-full ${isMobile ? 'px-4 overflow-x-auto' : 'max-w-[1300px]'} m-auto`}>
             <TableProducts
-              products={products || []}
+              products={products}
               pagination={pagination}
-              refreshTable={() => fetchProducts(currentPage)}
-              loadingTableOrders={loadingTableOrders}
+              refreshTable={() => {}}
+              loadingTableOrders={isLoadingProducts}
             />
-            {pagination && (
+            {pagination && pagination.totalElements > 0 && (
               <div className={`mt-4 ${isMobile ? 'flex justify-center w-full' : 'flex justify-end'}`}>
                 <Pagination
                   currentPage={currentPage}

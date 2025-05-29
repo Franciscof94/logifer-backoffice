@@ -20,7 +20,7 @@ import {
   IClientOption,
 } from "../interfaces/SelectOptions.interface";
 import { useClients } from "../hooks/queries/useClients";
-import { useProducts } from "../hooks/queries/useProducts";
+import { useProductOptions } from "../hooks/queries/useProductOptions";
 import { useUnitTypes } from "../hooks/queries/useUnitTypes";
 import { useCreateOrder } from "../hooks/mutations/useCreateOrder";
 import { RootState } from "../store/store";
@@ -55,7 +55,7 @@ export const NewOrder = () => {
     data: productsResponse = { items: [], meta: {} },
     isLoading: isLoadingProducts,
     error: productsError,
-  } = useProducts();
+  } = useProductOptions();
   const {
     data: unitTypeOptions = [],
     isLoading: isLoadingUnitTypes,
@@ -97,7 +97,7 @@ export const NewOrder = () => {
   const discountValue = watch("discount");
 
   const findProduct = productsResponse.items.find(
-    (product) => product.id === productValue
+    (product: IProductOption) => product.id === productValue
   ) as IProductOption | undefined;
 
   const clientOptions = useMemo(() => {

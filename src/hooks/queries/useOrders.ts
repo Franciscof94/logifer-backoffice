@@ -26,8 +26,7 @@ export const useOrders = (page: number, size: number = 9) => {
     refetchOnWindowFocus: false,
     retry: false,
     enabled: !!page && !!size,
-    gcTime: 0,
-    staleTime: 0,
+    staleTime: 1000 * 60 * 1,
   });
 };
 
