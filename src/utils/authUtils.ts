@@ -8,15 +8,17 @@ import { login } from "../store/slices/authSlice";
  */
 export async function refreshToken(): Promise<string | null> {
   try {
+    // Obtén el refresh token desde el store (o cookies si lo prefieres)
     const state = store.getState();
     const currentAuthData = state.authData?.auth;
-    const currentRefreshToken = currentAuthData?.refreshToken;
+    const currentRefreshToken = currentAuthData?.refreshToken || Cookies.get("refreshToken");
 
     if (!currentRefreshToken) {
-      console.error('No refresh token found in store');
+      console.error('No refresh token found');
       return null;
     }
 
+    // Llama al endpoint con el refresh token como Bearer
     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/auth/refresh`, {
       method: 'GET',
       headers: {
@@ -27,38 +29,31 @@ export async function refreshToken(): Promise<string | null> {
 
     if (!response.ok) {
       console.error('Error refreshing token:', response.status, response.statusText);
-      // Si el refresh token es inválido (e.g., 401, 403), desloguear
       if (response.status === 401 || response.status === 403) {
-        Cookies.remove("token"); // Access token
-        Cookies.remove("refreshToken"); // Si también lo guardas en cookies
-        store.dispatch(login({})); // Limpiar estado de auth en Redux
-        // Opcionalmente redirigir al login si no lo hace ya el interceptor
-        // window.location.href = "/ingresar"; 
+        Cookies.remove("token");
+        Cookies.remove("refreshToken");
+        store.dispatch(login({}));
       }
       return null;
     }
 
     const data = await response.json();
-    
     const newAccessToken = data.accessToken || data.access_token;
-    const newRefreshToken = data.refreshToken || data.refresh_token; // Para rotación de tokens
+    const newRefreshToken = data.refreshToken || data.refresh_token;
 
     if (newAccessToken) {
       Cookies.set("token", newAccessToken, { expires: 7 });
-      
-      const authPayloadForLogin = {
+      if (newRefreshToken) {
+        Cookies.set("refreshToken", newRefreshToken, { expires: 30 });
+      }
+
+      // Actualiza el store
+      store.dispatch(login({
         ...(currentAuthData || {}),
         accessToken: newAccessToken,
-      };
+        refreshToken: newRefreshToken || currentRefreshToken,
+      }));
 
-      if (newRefreshToken) {
-        authPayloadForLogin.refreshToken = newRefreshToken;
-        // Si guardas el refresh token en cookies, actualízalo también:
-        // Cookies.set("refreshToken", newRefreshToken, { expires: 30, secure: true, httpOnly: false/true });
-      }
-      
-      store.dispatch(login(authPayloadForLogin));
-      
       console.log('Token refreshed successfully');
       return newAccessToken;
     } else {
@@ -67,9 +62,6 @@ export async function refreshToken(): Promise<string | null> {
     }
   } catch (error) {
     console.error('Network or other error during token refresh:', error);
-    // Podrías querer desloguear aquí también en caso de error de red completo
-    // Cookies.remove("token");
-    // store.dispatch(login({}));
     return null;
   }
 }

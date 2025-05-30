@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { ModalLoginError } from "../components/auth/ModalLoginError";
 import { setLoadingButton } from "../store/slices/uiSlice";
 import { RootState } from "@/store/store";
+import { useAuthStore } from "../store/authStore";
 
 export const Login = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -34,6 +35,8 @@ export const Login = () => {
 
   const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
 
+  const { setAuth } = useAuthStore();
+
   const closeModal = () => {
     setModalIsOpen(false);
   };
@@ -50,34 +53,23 @@ export const Login = () => {
 
   const onSubmit: SubmitHandler<IUser> = async (data) => {
     try {
-      dispatch(setLoadingButton(true));
+      setLoadingButton(true);
       const res = await AuthService.postLogin(data);
-      dispatch(setLoadingButton(false));
+      setLoadingButton(false);
 
-      console.log("Respuesta del login:", res);
       const {
         data: { access_token, refreshToken, user },
       } = res;
 
-      console.log("ress", res.data.accessToken);
+      setAuth({
+        accessToken: access_token,
+        refreshToken,
+        user,
+      });
 
-      Cookies.set("token", access_token, { expires: 7 });
-
-      dispatch(
-        login({
-          accessToken: access_token,
-          refreshToken,
-          user: user || { id: 1, name: "Usuario" },
-        })
-      );
-
-      setTimeout(() => {
-        console.log("Login exitoso, redirigiendo a home...");
-        navigate("/", { replace: true });
-      }, 500);
+      navigate("/", { replace: true });
     } catch (error: any) {
-      console.error("Error en login:", error);
-      dispatch(setLoadingButton(false));
+      setLoadingButton(false);
       openModal();
       setError(error.message);
     }

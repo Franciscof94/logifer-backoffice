@@ -4,6 +4,7 @@ import { PUBLIC_ROUTE } from "../routes/publicRoutes";
 import { FC } from "react";
 import { RootState } from "@/store/store";
 import Cookies from "js-cookie";
+import { useAuthStore } from "../store/authStore";
 
 interface Props {
   permissions?: string[];
@@ -12,13 +13,14 @@ interface Props {
 export const RequireAuth: FC<Props> = ({ permissions = [] }) => {
   const auth = useSelector((state: RootState) => state.authData.auth);
   const location = useLocation();
-  
+  const { accessToken, user } = useAuthStore();
+
   console.log('Estado de autenticación:', auth);
-  
+
   const tokenCookie = Cookies.get("token");
   const hasTokenInCookies = !!tokenCookie;
   console.log('Token en cookies:', tokenCookie);
-  
+
   if (auth === undefined) {
     console.log('Auth is undefined, checking cookies...');
     if (hasTokenInCookies) {
@@ -32,8 +34,8 @@ export const RequireAuth: FC<Props> = ({ permissions = [] }) => {
     permisos: ["VIEW_HOME"],
   };
 
-  const isAuthenticated = !!auth?.user || !!auth?.accessToken || hasTokenInCookies;
-  
+  const isAuthenticated = !!accessToken || !!user || hasTokenInCookies;
+
   if (!isAuthenticated) {
     console.log('No authentication found, redirecting to login');
     return (

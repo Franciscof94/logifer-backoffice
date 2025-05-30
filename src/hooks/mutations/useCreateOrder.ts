@@ -12,6 +12,7 @@ export const useCreateOrder = () => {
       toast.success('Pedido creado correctamente!');
     },
     onError: (error: any) => {
+      console.log('EE', error)
       if (error.response?.status === 400) {
         toast.error(error.response.data.message);
       } else {
