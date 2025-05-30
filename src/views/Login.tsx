@@ -1,13 +1,11 @@
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import Cookies from "js-cookie";
 import { Button } from "../components/customs/Button";
 import { InputText } from "../components/customs/InputText";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { UserSchema } from "../validationSchemas";
 import { IUser } from "../interfaces";
 import AuthService from "../services/auth/authService";
-import { useDispatch, useSelector } from "react-redux";
-import { login } from "../store/slices/authSlice";
+import {  useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ModalLoginError } from "../components/auth/ModalLoginError";
@@ -18,7 +16,6 @@ import { useAuthStore } from "../store/authStore";
 export const Login = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [error, setError] = useState("");
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const methods = useForm<IUser>({
     resolver: yupResolver(UserSchema),
