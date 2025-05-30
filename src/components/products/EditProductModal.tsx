@@ -54,7 +54,7 @@ export const EditProductModal: FC<Props> = ({
   const onSubmit: SubmitHandler<IProduct> = async (data) => {
     try {
       dispatch(setLoadingButton(true));
-      await ProductsService.patchProduct(product?.id, data);
+      await ProductsService.patchProduct('', data);
       dispatch(setLoadingButton(false));
       toast.success("Producto editado exitosamente!");
       refreshTable();

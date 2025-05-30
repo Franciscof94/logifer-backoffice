@@ -3,10 +3,6 @@ import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import { IProduct } from "../../interfaces";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ProductSchema } from "../../validationSchemas";
-import ProductsService from "../../services/products/productsService";
-import { toast } from "react-toastify";
-import { setLoadingButton } from "../../store/slices/uiSlice";
-import { useDispatch, useSelector } from "react-redux";
 import { FormEditProduct } from "./FormEditProduct";
 import { Button } from "../customs/Button";
 import {
@@ -16,30 +12,23 @@ import {
   SheetTitle,
   SheetFooter,
 } from "../ui/sheet";
-import { RootState } from "../../store/store";
 import { X } from "lucide-react";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { useUpdateProduct } from "@/hooks/mutations/useUpdateProduct";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   product: IProduct | undefined;
-  refreshTable: () => void;
 }
 
-export const EditProductDrawer: FC<Props> = ({
-  isOpen,
-  onClose,
-  product,
-  refreshTable,
-}) => {
+export const EditProductDrawer: FC<Props> = ({ isOpen, onClose, product }) => {
   const isMobile = useIsMobile(768);
-  const dispatch = useDispatch();
   const methods = useForm<IProduct>({
     resolver: yupResolver(ProductSchema),
   });
 
-  const { isLoadingButton } = useSelector((state: RootState) => state.uiData);
+  const { mutate: updateProduct, isPending } = useUpdateProduct();
 
   const {
     handleSubmit,
@@ -55,22 +44,20 @@ export const EditProductDrawer: FC<Props> = ({
     }
   }, [setValue, product, isOpen]);
 
-  const onSubmit: SubmitHandler<IProduct> = async (data) => {
-    try {
-      dispatch(setLoadingButton(true));
-      await ProductsService.patchProduct(product?.id, data);
-      dispatch(setLoadingButton(false));
-      toast.success("Producto editado exitosamente!");
-      refreshTable();
-      onClose();
-    } catch (error: unknown) {
-      dispatch(setLoadingButton(false));
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Error al editar el producto");
+  const onSubmit: SubmitHandler<IProduct> = (data) => {
+    if (!product?.id) return;
+
+    updateProduct(
+      {
+        id: product.id, // Convertimos explícitamente a string
+        data,
+      },
+      {
+        onSuccess: () => {
+          onClose();
+        },
       }
-    }
+    );
   };
 
   return (
@@ -93,9 +80,9 @@ export const EditProductDrawer: FC<Props> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  disabled={isLoadingButton}
+                  disabled={isPending}
                   className={`rounded-full p-1 ${
-                    isLoadingButton
+                    isPending
                       ? "opacity-50 cursor-not-allowed"
                       : "hover:bg-gray-100"
                   }`}
@@ -118,8 +105,8 @@ export const EditProductDrawer: FC<Props> = ({
                     legend="Guardar"
                     size="xl"
                     height="40px"
-                    isLoading={isLoadingButton}
-                    disabled={isLoadingButton || !isValid}
+                    isLoading={isPending}
+                    disabled={isPending || !isValid}
                     width="100%"
                     type="submit"
                     color={isValid ? "blue" : "grey-50"}
@@ -132,7 +119,7 @@ export const EditProductDrawer: FC<Props> = ({
                     width="100%"
                     color="grey-50"
                     weight="medium"
-                    disabled={isLoadingButton}
+                    disabled={isPending}
                     type="button"
                     onClick={onClose}
                   />
@@ -146,7 +133,7 @@ export const EditProductDrawer: FC<Props> = ({
                     width="130px"
                     color="grey-50"
                     weight="light"
-                    disabled={isLoadingButton}
+                    disabled={isPending}
                     type="button"
                     onClick={onClose}
                   />
@@ -154,8 +141,8 @@ export const EditProductDrawer: FC<Props> = ({
                     legend="Guardar"
                     size="xl"
                     height="36px"
-                    isLoading={isLoadingButton}
-                    disabled={isLoadingButton || !isValid}
+                    isLoading={isPending}
+                    disabled={isPending || !isValid}
                     width="130px"
                     type="submit"
                     color={isValid ? "blue" : "grey-50"}

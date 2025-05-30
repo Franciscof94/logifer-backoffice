@@ -14,7 +14,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { formatArgentinePrice, formatArgentineNumber } from "../../utils/formatters";
+import {
+  formatArgentinePrice,
+  formatArgentineNumber,
+} from "../../utils/formatters";
 
 interface Props {
   products: IProduct[];
@@ -35,19 +38,19 @@ export const TableProducts: FC<Props> = ({
 }) => {
   const [localProducts, setLocalProducts] = useState<IProduct[]>([]);
   const dispatch = useDispatch();
-  
+
   const productsData = useMemo(() => products || [], [products]);
-  
+
   useEffect(() => {
     if (productsData && productsData.length > 0) {
       setLocalProducts(productsData);
     }
   }, [productsData]);
-  
+
   const [drawerDeleteIsOpen, setDrawerDeleteIsOpen] = useState(false);
   const [drawerEditIsOpen, setDrawerEditIsOpen] = useState(false);
   const [rowSelected, setRowSelected] = useState<IProduct>();
-  
+
   const [isDeleting, setIsDeleting] = useState(false);
 
   const openDrawerDelete = (row: IProduct) => {
@@ -70,16 +73,18 @@ export const TableProducts: FC<Props> = ({
 
   const handleDelete = async (id: number | undefined) => {
     if (isDeleting) return;
-    
+
     try {
       setIsDeleting(true);
       dispatch(setLoadingButton(true));
       await ProductsService.deleteProduct(id);
-      
-      setLocalProducts(prevProducts => prevProducts.filter(product => product.id !== id));
-      
+
+      setLocalProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== id)
+      );
+
       closeDrawerDelete();
-      
+
       refreshTable();
     } catch (error) {
       console.error(error);
@@ -88,7 +93,6 @@ export const TableProducts: FC<Props> = ({
       dispatch(setLoadingButton(false));
     }
   };
-
 
   const columns: ColumnDef<IProduct>[] = [
     {
@@ -101,13 +105,17 @@ export const TableProducts: FC<Props> = ({
       id: "price",
       header: "Precio",
       accessorKey: "price",
-      cell: ({ row }) => <span>{formatArgentinePrice(row.original.price)}</span>,
+      cell: ({ row }) => (
+        <span>{formatArgentinePrice(row.original.price)}</span>
+      ),
     },
     {
       id: "stock",
       header: "Stock",
       accessorKey: "stock",
-      cell: ({ row }) => <span>{formatArgentineNumber(row.original.stock)}</span>,
+      cell: ({ row }) => (
+        <span>{formatArgentineNumber(row.original.stock)}</span>
+      ),
     },
     {
       id: "actions",
@@ -168,7 +176,6 @@ export const TableProducts: FC<Props> = ({
         onClose={closeDrawerEdit}
         isOpen={drawerEditIsOpen}
         product={rowSelected}
-        refreshTable={refreshTable}
       />
     </div>
   );

@@ -94,7 +94,7 @@ const ProductsService = {
     return res;
   },
 
-  patchProduct: async (productId: number | undefined, product: IProduct) => {
+  patchProduct: async (productId: string | undefined, product: IProduct) => {
     await axiosInstance.patch(
       `/products/edit-product/${productId}`,
       product
