@@ -67,7 +67,7 @@ export const Sidebar = () => {
   };
 
   const NavContent = () => (
-    <div className="flex h-full flex-col">
+    <div className="flex h-[450px] flex-col">
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-2 py-4">
           {links.map((item, index) => (
