@@ -39,9 +39,8 @@ const getTitleFromPath = (pathname: string) => {
 export const Header = () => {
   const dispatch = useDispatch();
   const { pathname } = useLocation();
-  const auth = useSelector((state: RootState) => state.authData.auth);
+
   const { isOpen } = useSelector((state: RootState) => state.navbarData);
-  const isLogged = auth?.user;
   const isMobile = useIsMobile(768);
 
   useEffect(() => {
@@ -100,7 +99,7 @@ export const Header = () => {
             className={`${isMobile ? "w-[40px]" : "w-[60px]"}`}
             alt="logo-ferraro-materiales"
           />
-          {isLogged && (
+          {
             <h1
               className={`text-white font-semibold ${
                 isMobile ? "text-xl" : "text-2xl"
@@ -108,13 +107,13 @@ export const Header = () => {
             >
               {getTitleFromPath(pathname)}
             </h1>
-          )}
+          }
         </div>
-        {isLogged && (
+        {
           <button className="cursor-pointer" onClick={toggleMenu}>
             <RxHamburgerMenu color="white" size={isMobile ? 24 : 32} />
           </button>
-        )}
+        }
       </div>
     </div>
   );
